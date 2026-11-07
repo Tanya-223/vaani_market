@@ -27,8 +27,29 @@ All notable changes to Vaani Market. Dates are IST.
 - No number-to-words layer (Phase 1 listening test: Timbre normalizes rupees/percent itself).
 
 ### Pending (next)
-- Explainer node (3-sentence Telugu from payload), data tools `fetch_series`/`fetch_news`,
-  numeric provenance gate (Phase 4), retrieval tiers (Phase 3).
+- Tier-1 glossary (concept flow, Phase 3); output-side advice classifier + prediction
+  rejection (Phase 4 finish); web app + charts (Phase 5); eval harness (Phase 7).
+
+### Added — "what happened today" flow (end to end)
+- `data/market.py`: `fetch_series` (30-day closes, return, 30d high/low, volume-vs-average)
+  and `fetch_news` (handles both yfinance news schemas).
+- `agent/facts.py`: `FactSheet` — the one grounded payload; `to_prompt_block()` (data the
+  explainer quotes from) + `allowed_numbers()` (what the numeric gate permits). GoldBEES gets
+  gold (GC=F) + USD/INR support, never P/E.
+- `agent/explainer.py`: spoken-Telugu explainer (Telugu-script only, numbers copied verbatim,
+  no predictions/advice) + deterministic template fallback that cannot hallucinate numbers.
+- `agent/numeric_gate.py`: extracts every number from the draft, checks against allowed
+  (rounding tolerated); orphan → regenerate once → template fallback.
+- `agent/orchestrate.py`: full turn — planner → resolve → facts → explain → numeric gate →
+  grounded answer + display payload + disclaimer.
+- `tests/test_numeric_gate.py` (6) → **34 tests passing**.
+- `probes/probe_answer.py`: 5 live data cases all gate-pass; GAIL answer synthesized to audio.
+
+### Verified (live)
+- End-to-end grounded Telugu answers for price / why-moved / trend / GoldBEES / Nifty;
+  every answer carries the as-of time + disclaimer; numeric gate passes on all five.
+- Numeric gate caught a real edge case (the "50" in "Nifty 50") — fixed by allowing
+  name-embedded numbers. Explainer script-mixing (Bengali) fixed with a Telugu-only rule.
 
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
