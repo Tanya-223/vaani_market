@@ -99,6 +99,35 @@ All notable changes to Vaani Market. Dates are IST.
   construction) — to be confirmed on a real phone over the cloudflared HTTPS URL.
 - "why/how" turns ~6.4s agent time (two sequential LLM calls dominate); above the 3.5s target.
 
+## [Unreleased] — Phase 4 (guardrails finish) + Phase 7 (eval harness) — done
+### Added
+- `agent/advice.py` — deterministic advice/prediction classifier (Telugu+English), run on
+  INPUT (short-circuits to refusal BEFORE the LLM) and on the drafted OUTPUT (a leaked
+  recommendation/prediction falls back to the template, else refuses).
+- Orchestrator short-circuits (no LLM): advice -> refuse; ambiguous prefix (bare "HDFC")
+  -> clarify. Stronger guardrail + fixes vague "how is HDFC"/"tell me about HDFC".
+- `eval/adversarial.py` — 40-case suite (report 10.4 counts) + ticker + retrieval labels.
+- `eval/harness.py` — runs the suite live, writes `eval/results/adversarial.csv` (per case)
+  and `eval/results/metrics.csv` (summary). Throttled + resilient to 429.
+- Tests: `test_advice` (6), `test_orchestrate` (5) -> **50 tests passing**.
+
+### Measured (eval/results/metrics.csv)
+- routing_accuracy 100% (40/40); refusal_accuracy 100% (18/18); numeric_hallucination 0/10;
+  ticker_resolution 16/16; glossary P@1/MRR@5/nDCG@5 = 1.0.
+- RAGAS generation metrics, WER, and browser TTFA/E2E are written as **target** (not measured).
+
+### Honest caveats
+- Latency rows (median 3.76s / p90 14s / max 135s) were measured UNDER free-tier
+  rate-limiting and INCLUDE 429 retry backoff — not true model latency. Clean per-call
+  probes were ~1.5-2.7s; one full why-moved turn ~6.4s. Real TTFA/E2E = browser-measured (target).
+- Fix caught by the harness: two ambiguous-HDFC phrasings were misrouted (false refuse /
+  no_data); the deterministic ambiguous short-circuit fixed both (now 40/40).
+
+### Still pending
+- Phase 6 memory (session follow-ups, prefs); Tier-2/Tier-3 retrieval (deferred per cut order).
+- Telugu review of all `reviewed:false` strings (needs a Telugu speaker = you).
+- Demo video + publishing (report 12.6).
+
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
 - Project scaffolding: git repo, `.gitignore` (committed before `.env`), Python 3.9 venv,

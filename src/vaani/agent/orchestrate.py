@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import explainer, facts, numeric_gate, planner, refusal, ticker_resolver
+from . import advice, explainer, facts, numeric_gate, planner, refusal, ticker_resolver
 from ..retrieval import tier1
 
 _GENERIC_CLARIFY = {
@@ -31,6 +31,21 @@ class Answer:
 
 
 def handle(text: str) -> Answer:
+    # Deterministic advice short-circuit — refuse WITHOUT calling the LLM. This is a
+    # stronger guardrail (works even if the LLM is unavailable) and saves a call.
+    if advice.is_advice_request(text):
+        return Answer("refuse", refusal.refusal("te-IN").text, "te-IN",
+                      refusal.disclaimer("te-IN").text, intent="advice_request")
+
+    # Deterministic ambiguous-ticker short-circuit: a shared prefix like "HDFC" with no
+    # Bank/Life/AMC qualifier must ask which one — regardless of how the planner would
+    # classify the sentence (this fixes vague "how is HDFC" / "tell me about HDFC").
+    amb = ticker_resolver.resolve(text)
+    if amb.status == "ambiguous":
+        return Answer("clarify", ticker_resolver.clarifying_question_te(amb), "te-IN",
+                      refusal.disclaimer("te-IN").text, intent="ambiguous_ticker",
+                      display={"candidates": [c.symbol for c in amb.candidates]})
+
     p = planner.plan(text)
     lang = p.language_out or "te-IN"
     disc = refusal.disclaimer(lang).text
@@ -81,6 +96,15 @@ def handle(text: str) -> Answer:
     if not ok:                                  # deterministic template fallback
         draft = explainer.template_answer(fs, lang)
         used_template = True
+        ok, _ = numeric_gate.check(draft, allowed)
+
+    # Output guard: a leaked recommendation or prediction must not ship. Fall back to
+    # the template (which states only facts); if even that trips, refuse outright.
+    if advice.output_is_unsafe(draft):
+        draft = explainer.template_answer(fs, lang)
+        used_template = True
+        if advice.output_is_unsafe(draft):
+            return mk("refuse", refusal.refusal(lang).text)
         ok, _ = numeric_gate.check(draft, allowed)
 
     return mk("answer", draft, display=_display(fs), gate_ok=ok, used_template=used_template)

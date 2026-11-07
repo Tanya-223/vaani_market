@@ -52,7 +52,10 @@ def chat(
     if json_mode:
         body["response_format"] = {"type": "json_object"}
 
-    resp, timing = request_with_retry("POST", url, headers=headers, json=body, timeout=timeout)
+    resp, timing = request_with_retry(
+        "POST", url, headers=headers, json=body, timeout=timeout,
+        max_retries=5, base_delay=2.0, max_delay=30.0,  # ride out free-tier per-minute limits
+    )
     if resp.status_code != 200:
         raise LLMError(f"HTTP {resp.status_code}: {resp.text[:400]}")
 
@@ -89,7 +92,10 @@ def embed(texts: list[str], *, model: str | None = None, timeout: float = 30.0) 
         "Content-Type": "application/json",
     }
     body = {"model": model or config.LLM_EMBED_MODEL, "input": texts}
-    resp, _ = request_with_retry("POST", url, headers=headers, json=body, timeout=timeout)
+    resp, _ = request_with_retry(
+        "POST", url, headers=headers, json=body, timeout=timeout,
+        max_retries=5, base_delay=2.0, max_delay=30.0,
+    )
     if resp.status_code != 200:
         raise LLMError(f"embeddings HTTP {resp.status_code}: {resp.text[:300]}")
     data = resp.json().get("data", [])
