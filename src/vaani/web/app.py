@@ -24,10 +24,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))  # src/ on path
 
 from vaani import config
-from vaani.agent import orchestrate
+from vaani.agent import memory, orchestrate
 from vaani.gnani import stt, tts
 
 STATIC = Path(__file__).resolve().parent / "static"
+
+# Single in-process session for the demo (one user at a time). Enables follow-ups
+# like "దాని ట్రెండ్?" to reuse the last ticker.
+_SESSION = memory.SessionMemory()
 
 # Sentence split for chunked synthesis (Telugu danda + ASCII . ? !).
 _SENT = re.compile(r"[^.?!।]+[.?!।]?")
@@ -39,7 +43,7 @@ def split_sentences(text: str) -> list[str]:
 
 def _turn_from_transcript(transcript: str, timings: dict) -> dict:
     t0 = time.monotonic()
-    ans = orchestrate.handle(transcript)
+    ans = orchestrate.handle(transcript, session=_SESSION)
     timings["agent_wall"] = round(time.monotonic() - t0, 3)
     return {
         "transcript": transcript,

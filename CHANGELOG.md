@@ -128,6 +128,24 @@ All notable changes to Vaani Market. Dates are IST.
 - Telugu review of all `reviewed:false` strings (needs a Telugu speaker = you).
 - Demo video + publishing (report 12.6).
 
+## [Unreleased] — Phase 6 (memory) — done
+### Added
+- `agent/memory.py` — SessionMemory (rolling 5 turns; `last_symbol()` carry-over) and
+  LongTermMemory (preferred language/voice + watchlist, persisted JSON). HARD RULE: no
+  holdings/orders/PAN/Aadhaar/profile fields (asserted by a test).
+- Orchestrator: optional `session`; a follow-up with no ticker ("దాని ట్రెండ్?") reuses the
+  last resolved symbol. Wired a single in-process session into the web server (one-user demo).
+- `tests/test_memory.py` (4) -> **54 tests passing**. `probes/probe_memory.py`.
+
+### Verified (live)
+- Carry-over works: "GAIL ... / దాని ట్రెండ్?" -> both resolved GAIL.NS without repeating the name.
+
+### Known limitation (honest)
+- The lite planner occasionally over-classifies an unusual follow-up opener ("మరి IOC ఎలా ఉంది?")
+  as advice and over-refuses (safe-side error). Not patched yet to avoid invalidating the
+  committed 40/40 metrics without a re-run; flagged for deliberate tuning.
+- Web server must be restarted to pick up memory wiring (the demo instance predates it).
+
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
 - Project scaffolding: git repo, `.gitignore` (committed before `.env`), Python 3.9 venv,

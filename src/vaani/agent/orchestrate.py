@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import advice, explainer, facts, numeric_gate, planner, refusal, ticker_resolver
+from . import advice, explainer, facts, memory as mem, numeric_gate, planner, refusal, ticker_resolver
 from ..retrieval import tier1
 
 _GENERIC_CLARIFY = {
@@ -30,7 +30,7 @@ class Answer:
     intent: str = ""
 
 
-def handle(text: str) -> Answer:
+def handle(text: str, session: "mem.SessionMemory | None" = None) -> Answer:
     # Deterministic advice short-circuit — refuse WITHOUT calling the LLM. This is a
     # stronger guardrail (works even if the LLM is unavailable) and saves a call.
     if advice.is_advice_request(text):
@@ -50,7 +50,9 @@ def handle(text: str) -> Answer:
     lang = p.language_out or "te-IN"
     disc = refusal.disclaimer(lang).text
 
-    def mk(routing, msg, **kw):
+    def mk(routing, msg, symbol=None, **kw):
+        if session is not None:
+            session.record(text, p.intent, symbol, lang)
         return Answer(routing, msg, lang, disc, intent=p.intent, plan=p.plan, **kw)
 
     if p.action == "refuse":
@@ -70,10 +72,16 @@ def handle(text: str) -> Answer:
             "reviewed": entry.reviewed, "retrieval_score": round(score, 3),
         })
 
-    # Everything else needs a ticker.
+    # Everything else needs a ticker. A follow-up with none ("దాని ట్రెండ్?") reuses the
+    # last resolved ticker from session memory.
     if not p.tickers:
-        return mk("clarify", _GENERIC_CLARIFY.get(lang, _GENERIC_CLARIFY["en-IN"]))
-    res = ticker_resolver.resolve(p.tickers[0], lang)
+        carried = session.last_symbol() if session else None
+        if carried and p.intent in mem.DATA_INTENTS and carried in ticker_resolver._BY_SYMBOL:
+            res = ticker_resolver.Resolution("resolved", [ticker_resolver._cand(carried, 1.0)])
+        else:
+            return mk("clarify", _GENERIC_CLARIFY.get(lang, _GENERIC_CLARIFY["en-IN"]))
+    else:
+        res = ticker_resolver.resolve(p.tickers[0], lang)
     if res.status == "ambiguous":
         return mk("clarify", ticker_resolver.clarifying_question_te(res),
                   display={"candidates": [c.symbol for c in res.candidates]})
@@ -107,7 +115,8 @@ def handle(text: str) -> Answer:
             return mk("refuse", refusal.refusal(lang).text)
         ok, _ = numeric_gate.check(draft, allowed)
 
-    return mk("answer", draft, display=_display(fs), gate_ok=ok, used_template=used_template)
+    return mk("answer", draft, symbol=res.symbol, display=_display(fs),
+              gate_ok=ok, used_template=used_template)
 
 
 def _display(fs: facts.FactSheet) -> dict:
