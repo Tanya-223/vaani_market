@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="te">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0b1020" />
+<link rel="manifest" href="/static/manifest.json" />
+<title>Vaani Market</title>
+<style>
+  :root { --bg:#0b1020; --card:#141b2e; --ink:#e8ecf5; --muted:#8ea0c0;
+          --up:#34d399; --down:#f87171; --accent:#60a5fa; --line:#2a3550; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+         font-family:system-ui,-apple-system,"Noto Sans Telugu",sans-serif;
+         padding:16px 16px 120px; max-width:560px; margin:0 auto; }
+  header h1 { font-size:22px; margin:8px 0 2px; }
+  header p { color:var(--muted); margin:0 0 14px; font-size:13px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+          padding:14px; margin:12px 0; }
+  .label { color:var(--muted); font-size:12px; text-transform:uppercase; letter-spacing:.04em; }
+  #answer { font-size:19px; line-height:1.5; margin-top:6px; }
+  #transcript { color:var(--muted); font-size:14px; }
+  .disclaimer { color:#fbbf24; font-size:13px; margin-top:10px; }
+  .meta { color:var(--muted); font-size:12px; margin-top:8px; }
+  .pill { display:inline-block; padding:2px 10px; border-radius:999px; font-weight:600; }
+  .up { background:rgba(52,211,153,.15); color:var(--up); }
+  .down { background:rgba(248,113,113,.15); color:var(--down); }
+  .headline { font-size:14px; padding:6px 0; border-top:1px solid var(--line); }
+  .headline small { color:var(--muted); }
+  .badge { font-size:11px; color:var(--muted); border:1px solid var(--line);
+           border-radius:6px; padding:1px 6px; margin-left:6px; }
+  svg { width:100%; height:auto; display:block; }
+  /* mic */
+  .dock { position:fixed; left:0; right:0; bottom:0; padding:14px 16px 22px;
+          background:linear-gradient(transparent,#0b1020 30%); text-align:center; }
+  #mic { width:84px; height:84px; border-radius:50%; border:none; cursor:pointer;
+         background:var(--accent); color:#071226; font-size:30px; font-weight:700;
+         box-shadow:0 8px 24px rgba(96,165,250,.35); transition:transform .1s; }
+  #mic:active { transform:scale(.96); }
+  #mic.recording { background:var(--down); color:#fff; animation:pulse 1s infinite; }
+  @keyframes pulse { 0%,100%{box-shadow:0 0 0 0 rgba(248,113,113,.5);} 50%{box-shadow:0 0 0 14px rgba(248,113,113,0);} }
+  #status { color:var(--muted); font-size:13px; min-height:18px; margin-top:8px; }
+  .typed { display:flex; gap:8px; margin-top:8px; }
+  .typed input { flex:1; background:#0e1526; border:1px solid var(--line); color:var(--ink);
+                 border-radius:8px; padding:10px; font-size:15px; }
+  .typed button { background:#1f2a44; color:var(--ink); border:1px solid var(--line);
+                  border-radius:8px; padding:0 14px; }
+  .hidden { display:none; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Vaani Market</h1>
+    <p>వాయిస్‌తో అడగండి — స్టాక్ మార్కెట్ వివరణలు. సలహా కాదు.</p>
+  </header>
+
+  <div id="result" class="hidden">
+    <div class="card">
+      <div class="label">మీరు అడిగింది</div>
+      <div id="transcript"></div>
+    </div>
+    <div class="card">
+      <div class="label" id="routingLabel">సమాధానం</div>
+      <div id="answer"></div>
+      <div id="viz"></div>
+      <div id="headlines"></div>
+      <div class="meta" id="meta"></div>
+      <div class="disclaimer" id="disclaimer"></div>
+    </div>
+  </div>
+
+  <div class="dock">
+    <button id="mic" aria-label="Record">🎤</button>
+    <div id="status">మాట్లాడటానికి మైక్ నొక్కండి (గరిష్ఠం 30 సెకన్లు)</div>
+    <div class="typed">
+      <input id="typed" placeholder="లేదా టైప్ చేయండి (పరీక్ష కోసం)…" />
+      <button id="send">పంపు</button>
+    </div>
+  </div>
+
+  <audio id="player" class="hidden"></audio>
+  <script src="/static/app.js"></script>
+</body>
+</html>

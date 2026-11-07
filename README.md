@@ -33,6 +33,20 @@ python -W ignore probes/probe_stt.py      # loopback: transcript + te-IN
 python -W ignore probes/probe_market.py   # verifies all symbols + delay
 ```
 
+## Run the phone web app
+```bash
+./run_web.sh            # serves on http://localhost:8000
+```
+Phone browsers only allow the microphone over **HTTPS**, so expose it with a tunnel:
+```bash
+brew install cloudflared                      # one-time (or: npm i -g localtunnel)
+cloudflared tunnel --url http://localhost:8000
+```
+Open the printed `https://…trycloudflare.com` URL on your phone, tap the mic, and ask in
+Telugu. "Add to Home Screen" installs it as an app (PWA). Typed input is available for
+testing without a mic.
+
 ## Status
-Phase 1 complete (data layer proven). See `CHANGELOG.md` and `docs/PHASE1_FINDINGS.md`.
-Metric values are **targets** until the evaluation harness (Phase 7) produces them.
+Phases 1–3 and the phone web app (Phase 5) are built and run live. Guardrail finish
+(output-side advice check) and the evaluation harness (Phase 7) are next. See `CHANGELOG.md`.
+Metric values are **targets** until the evaluation harness produces them.

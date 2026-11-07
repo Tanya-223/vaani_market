@@ -74,6 +74,31 @@ All notable changes to Vaani Market. Dates are IST.
 - Tier-2 hybrid retrieval (company notes + 90d news) and Tier-3 remain interfaces/deferred;
   why_moved currently uses live quote+series+headlines directly (not a hybrid-retrieval store).
 
+## [Unreleased] — Phase 5 (phone web app) — done
+### Added
+- `web/app.py` — stdlib server. Endpoints: `/` , `/static/*`, `/api/turn` (WAV -> STT ->
+  orchestrator -> answer+sentences+display+timings), `/api/tts` (text -> WAV), `/api/ask_text`.
+- `web/static/` — mobile UI: mic -> in-browser 16-bit mono 16kHz WAV, 30s countdown + auto-stop,
+  sentence-chunked TTS playback with TTFA/E2E timing, live 30-day line chart + change pill +
+  volume-vs-avg, illustrative labeled candlestick diagram, headlines, disclaimer, as-of.
+  PWA (manifest + service worker + icon). Typed fallback for testing.
+- `run_web.sh`; README run + HTTPS-tunnel (cloudflared) instructions.
+
+### Fixed (safety/quality)
+- Explainer now writes numbers as DIGITS (the numeric gate only reads Arabic digits, so
+  Telugu-word numbers previously bypassed it) and states the as-of as a clean date.
+- `facts.build` fetches quote/series/news/gold in parallel: agent turn ~8.6s -> ~6.4s.
+
+### Verified (live, through the server)
+- `/api/turn` with a Telugu WAV: STT (te-IN) -> grounded answer -> 3 sentences; gate passed.
+- `/api/ask_text` concept -> candlestick (visual flag); why_moved -> 30 close points for chart.
+- `/api/tts` returns audio/wav with X-Wall-Seconds.
+
+### Known / honest
+- No tunnel binary installed in the dev sandbox; browser mic/audio untested here (works by
+  construction) — to be confirmed on a real phone over the cloudflared HTTPS URL.
+- "why/how" turns ~6.4s agent time (two sequential LLM calls dominate); above the 3.5s target.
+
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
 - Project scaffolding: git repo, `.gitignore` (committed before `.env`), Python 3.9 venv,

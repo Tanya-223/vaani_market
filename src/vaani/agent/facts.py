@@ -11,11 +11,23 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 
 from ..data import market
 from . import ticker_resolver
 
 GOLD_SYMBOL = "GOLDBEES.NS"
+
+
+def _human_date(iso: str | None) -> str:
+    if not iso:
+        return "unknown"
+    try:
+        dt = datetime.fromisoformat(iso.replace("Z", "+00:00"))
+        return f"{dt.day} {dt:%b %Y}"
+    except ValueError:
+        return iso[:10]
 
 
 @dataclass
@@ -37,7 +49,7 @@ class FactSheet:
         lines = [
             f'name: {self.name_en} ({self.name_te})',
             f'kind: {self.kind}',
-            f'as of: {self.as_of or q.as_of} (source: {q.source})',
+            f'as of: {_human_date(self.as_of or q.as_of)} (delayed data; source: {q.source})',
         ]
         if q.price is not None:
             lines.append(f'latest price: {q.price} {q.currency or ""}'.strip())
@@ -106,32 +118,34 @@ def _add(s: set[float], v) -> None:
 
 
 def build(symbol: str, intent: str, language: str = "te-IN") -> FactSheet | None:
-    """Assemble the FactSheet for a resolved symbol. Returns None if there's no data."""
+    """Assemble the FactSheet for a resolved symbol. Returns None if there's no data.
+    Quote / series / news / gold are fetched in parallel to cut latency."""
     inst = ticker_resolver._BY_SYMBOL.get(symbol)
     name_en = inst.name_en if inst else symbol
     name_te = inst.name_te if inst else symbol
     kind = inst.kind if inst else "stock"
 
-    quote = market.fetch_quote(symbol)
-    if not quote.ok:
-        return None
+    want_series = intent in ("why_moved", "trend")
+    want_news = intent == "why_moved"
+    want_gold = symbol == GOLD_SYMBOL
 
-    series = None
-    if intent in ("why_moved", "trend"):
-        series = market.fetch_series(symbol, days=30)
+    with ThreadPoolExecutor(max_workers=4) as ex:
+        f_quote = ex.submit(market.fetch_quote, symbol)
+        f_series = ex.submit(market.fetch_series, symbol, 30) if want_series else None
+        f_news = ex.submit(market.fetch_news, symbol, 4) if want_news else None
+        f_gold = ex.submit(market.fetch_quote, "GC=F") if want_gold else None
+        f_fx = ex.submit(market.fetch_quote, "INR=X") if want_gold else None
 
-    news: list[market.Headline] = []
-    if intent == "why_moved":
-        news = market.fetch_news(symbol, limit=4)
-
-    gold = None
-    if symbol == GOLD_SYMBOL:
-        g = market.fetch_quote("GC=F")
-        fx = market.fetch_quote("INR=X")
-        gold = {
-            "gold_usd": g.price if g.ok else None,
-            "usd_inr": fx.price if fx.ok else None,
-        }
+        quote = f_quote.result()
+        if not quote.ok:
+            return None
+        series = f_series.result() if f_series else None
+        news = f_news.result() if f_news else []
+        gold = None
+        if want_gold:
+            g, fx = f_gold.result(), f_fx.result()
+            gold = {"gold_usd": g.price if g.ok else None,
+                    "usd_inr": fx.price if fx.ok else None}
 
     return FactSheet(
         symbol=symbol, name_en=name_en, name_te=name_te, kind=kind, intent=intent,

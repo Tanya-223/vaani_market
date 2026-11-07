@@ -42,6 +42,8 @@ def _system(fs: FactSheet, language: str) -> str:
         "HARD RULES:\n"
         "- Use ONLY numbers that appear in FACTS, copied EXACTLY. Do not compute, convert, "
         "round, or invent any number.\n"
+        "- Write every number using DIGITS (e.g. 185.79, 2.3, 30), never spelled out in words. "
+        "Keep the as-of simply as the date given; do not read out the time or 'UTC'.\n"
         "- Do NOT state raw volume/share counts. To describe volume, use ONLY the "
         "'volume vs average' percent value (trading was that percent above/below average).\n"
         "- Do NOT copy the FACTS labels into the answer; state each figure in natural words.\n"
