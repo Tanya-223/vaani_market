@@ -5,20 +5,30 @@ All notable changes to Vaani Market. Dates are IST.
 ## [Unreleased] — Phase 2 (agent core) — in progress
 ### Added
 - `src/vaani/llm/adapter.py` — one function over an OpenAI-compatible chat/completions
-  endpoint (provider-agnostic, capped output, JSON mode). Decision: **Google Gemini Flash**
-  (`gemini-3.8-flash`), base `https://generativelanguage.googleapis.com/v1beta/openai/`.
+  endpoint (provider-agnostic, capped output, JSON mode).
 - `src/vaani/agent/ticker_resolver.py` — alias table (Latin + Telugu script) + fuzzy
-  (difflib) + phonetic matching; bare "HDFC" forced to a clarifying question; exposes
-  `keyterms()` for Prisma STT biasing.
-- `tests/test_ticker_resolver.py` — 13 tests, all passing.
-- `probes/probe_llm.py` — verifies Telugu generation + JSON output (run once LLM key added).
-- `pytest.ini`.
+  (difflib) + phonetic matching; bare "HDFC" forced to a clarifying question; `keyterms()`.
+- `src/vaani/agent/tools.py` — tool ALLOWLIST (no order-placement tool exists) + `filter_plan`.
+- `src/vaani/agent/refusal.py` — hard-coded refusal/decline/disclaimer/no-data constants;
+  all Telugu flagged `reviewed=False`.
+- `src/vaani/agent/planner.py` — one constrained LLM call → JSON; deterministic routing
+  (advice→refuse, out-of-scope→decline, confidence<0.5→clarify, plan filtered to allowlist).
+- Tests: `test_ticker_resolver` (13), `test_refusal` (7), `test_planner` (8) — **28 passing**.
+- Probes: `probe_llm` (Telugu + JSON), `probe_planner` (routing demo).
+
+### Verified (live)
+- LLM model chosen by benchmark: **`gemini-3.5-flash-lite`** (fast ~2s, non-thinking, natural
+  Telugu). `gemini-2.5-flash*` are 404 for new keys; full `gemini-3.8-flash` too slow
+  (thinking overhead, ~9.6s, truncated output).
+- `probe_planner`: **19/19 starter cases route as expected** — all advice→refuse,
+  out-of-scope→decline, bare HDFC→clarify, unknown→no_data, prompt-injection did not flip to advice.
 
 ### Decisions
 - No number-to-words layer (Phase 1 listening test: Timbre normalizes rupees/percent itself).
 
-### Pending
-- LLM endpoint credentials (Gemini) → then run `probe_llm.py`, build planner + explainer.
+### Pending (next)
+- Explainer node (3-sentence Telugu from payload), data tools `fetch_series`/`fetch_news`,
+  numeric provenance gate (Phase 4), retrieval tiers (Phase 3).
 
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
