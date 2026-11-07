@@ -1,0 +1,14 @@
+# Core (Phase 1-2)
+requests>=2.31
+python-dotenv>=1.0
+yfinance>=0.2.40
+
+# Retrieval (Phase 3) — installed later, may need a newer Python interpreter
+# sentence-transformers
+# FlagEmbedding        # BGE-M3
+# rank-bm25
+
+# Web (Phase 5) — stdlib http.server is used; no framework required for the demo
+
+# Tests
+pytest>=8.0
