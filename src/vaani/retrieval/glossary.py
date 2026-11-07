@@ -1,0 +1,122 @@
+"""Tier-1 glossary — the small, static, human-reviewable corpus for beginner concepts.
+
+Source English text is from docs/vaani_context.md section 4. Every Telugu entry is a
+DRAFT (reviewed=False) until a Telugu speaker signs off — written as natural spoken
+Telugu that keeps common English words (share, stock, NSE, Nifty, P/E) as people say them.
+
+`visual` marks entries that pair with an on-screen diagram in the web app.
+"""
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+
+@dataclass
+class Entry:
+    id: str
+    term_en: str
+    text_en: str
+    text_te: str
+    reviewed: bool = False      # Telugu must be reviewed before public use
+    visual: str | None = None   # key of a diagram to show (e.g. "candlestick")
+
+
+GLOSSARY: list[Entry] = [
+    Entry(
+        "stock_share", "stock / share",
+        "A share is a small piece of ownership in a company. If you own shares, you own a "
+        "tiny part of that company. The price goes up and down as buyers and sellers agree "
+        "on what the company is worth.",
+        "షేర్ అంటే ఒక కంపెనీలో చిన్న యాజమాన్య భాగం. మీ దగ్గర షేర్లు ఉంటే, ఆ కంపెనీలో మీకు కొద్ది భాగం సొంతం. "
+        "కొనేవాళ్లు, అమ్మేవాళ్లు కంపెనీ విలువ గురించి ఒప్పుకున్నప్పుడు ధర పెరుగుతూ, తగ్గుతూ ఉంటుంది.",
+    ),
+    Entry(
+        "stock_market", "stock market",
+        "The stock market is where buyers and sellers trade company shares. In India this "
+        "happens on exchanges, mainly NSE and BSE. Trading runs from 9:15 in the morning to "
+        "3:30 in the afternoon on weekdays.",
+        "స్టాక్ మార్కెట్ అంటే కంపెనీల షేర్లను కొనడం, అమ్మడం జరిగే చోటు. ఇండియాలో ఇది ప్రధానంగా NSE, BSE అనే "
+        "ఎక్స్ఛేంజ్‌లలో జరుగుతుంది. ట్రేడింగ్ పని రోజుల్లో ఉదయం 9:15 నుంచి మధ్యాహ్నం 3:30 వరకు జరుగుతుంది.",
+    ),
+    Entry(
+        "nse_bse", "NSE and BSE",
+        "NSE is the National Stock Exchange and BSE is the Bombay Stock Exchange. They are "
+        "India's two main exchanges. BSE is older, and NSE handles far more trading. Most big "
+        "companies are listed on both, at almost the same price.",
+        "NSE అంటే నేషనల్ స్టాక్ ఎక్స్ఛేంజ్, BSE అంటే బాంబే స్టాక్ ఎక్స్ఛేంజ్. ఇవి ఇండియాలోని రెండు ప్రధాన "
+        "ఎక్స్ఛేంజ్‌లు. BSE పాతది, NSEలో ట్రేడింగ్ చాలా ఎక్కువ. చాలా పెద్ద కంపెనీలు రెండింటిలోనూ దాదాపు ఒకే ధరకు లిస్ట్ అవుతాయి.",
+    ),
+    Entry(
+        "nifty_sensex", "Nifty and Sensex",
+        "Nifty 50 is an index of fifty large companies on NSE. Sensex is an index of thirty "
+        "large companies on BSE. When people say the market went up, they usually mean one of "
+        "these went up.",
+        "నిఫ్టీ 50 అంటే NSEలోని యాభై పెద్ద కంపెనీల ఇండెక్స్. సెన్సెక్స్ అంటే BSEలోని ముప్ఫై పెద్ద కంపెనీల ఇండెక్స్. "
+        "మార్కెట్ పెరిగింది అని జనం అన్నప్పుడు, సాధారణంగా వీటిలో ఒకటి పెరిగిందని అర్థం.",
+    ),
+    Entry(
+        "candlestick", "candlestick chart",
+        "A candlestick shows what a price did in one period, such as one day. The thick part is "
+        "the body, between the opening and the closing price. The thin lines above and below are "
+        "the wicks, showing the highest and lowest prices. Commonly a green candle means the "
+        "price closed higher than it opened, and a red candle means it closed lower.",
+        "క్యాండిల్‌స్టిక్ అనేది ఒక రోజు లాంటి ఒక కాలంలో ధర ఎలా కదిలిందో చూపిస్తుంది. మందపాటి భాగం బాడీ, అది ఓపెనింగ్, "
+        "క్లోజింగ్ ధరల మధ్య ఉంటుంది. పైన కింద ఉండే సన్నని గీతలు విక్స్, అవి అత్యధిక, అత్యల్ప ధరలను చూపిస్తాయి. "
+        "సాధారణంగా ఆకుపచ్చ క్యాండిల్ అంటే ధర ఓపెన్ కంటే ఎక్కువ క్లోజ్ అయిందని, ఎరుపు క్యాండిల్ అంటే తక్కువ క్లోజ్ అయిందని అర్థం.",
+        visual="candlestick",
+    ),
+    Entry(
+        "market_cap", "market capitalisation",
+        "Market cap is the total value of a company's shares. It is the share price multiplied "
+        "by the number of shares. In India it is usually told in crore rupees.",
+        "మార్కెట్ క్యాప్ అంటే ఒక కంపెనీ షేర్ల మొత్తం విలువ. ఇది షేర్ ధరను షేర్ల సంఖ్యతో గుణిస్తే వస్తుంది. "
+        "ఇండియాలో దీన్ని సాధారణంగా కోట్ల రూపాయల్లో చెబుతారు.",
+    ),
+    Entry(
+        "pe_ratio", "P/E ratio",
+        "The P/E ratio is the share price divided by the company's yearly profit per share. It "
+        "shows how many rupees people pay for each rupee of profit. Compare it with similar "
+        "companies, not with everything.",
+        "P/E రేషియో అంటే షేర్ ధరను కంపెనీ ఏడాది లాభం (ఒక్కో షేర్‌కి) తో భాగిస్తే వచ్చేది. ప్రతి ఒక్క రూపాయి లాభానికి "
+        "జనం ఎన్ని రూపాయలు చెల్లిస్తున్నారో ఇది చూపిస్తుంది. దీన్ని అన్నిటితో కాకుండా, సారూప్య కంపెనీలతో పోల్చాలి.",
+    ),
+    Entry(
+        "circuit_limit", "circuit limit",
+        "A circuit limit is the most a share's price can move up or down in one day. When it "
+        "reaches that limit, trading in it stops moving in that direction for the day.",
+        "సర్క్యూట్ లిమిట్ అంటే ఒక రోజులో షేర్ ధర పైకి లేదా కిందికి కదలగల గరిష్ఠ పరిమితి. ఆ పరిమితిని చేరుకున్నప్పుడు, "
+        "ఆ రోజుకు ఆ దిశలో ట్రేడింగ్ ఆగిపోతుంది.",
+    ),
+    Entry(
+        "demat_account", "demat account",
+        "A demat account holds your shares in electronic form, like a bank account holds money. "
+        "You also need a trading account to place orders.",
+        "డీమ్యాట్ అకౌంట్ మీ షేర్లను ఎలక్ట్రానిక్ రూపంలో ఉంచుతుంది, బ్యాంక్ అకౌంట్ డబ్బును ఉంచినట్టు. ఆర్డర్లు పెట్టడానికి "
+        "మీకు ట్రేడింగ్ అకౌంట్ కూడా అవసరం.",
+    ),
+    Entry(
+        "etf", "ETF",
+        "An ETF is a fund that trades on the exchange like a share and follows something, such "
+        "as an index or the price of gold. GoldBEES is a gold ETF.",
+        "ETF అనేది షేర్ లాగా ఎక్స్ఛేంజ్‌లో ట్రేడ్ అయ్యే ఒక ఫండ్; అది ఇండెక్స్ లేదా బంగారం ధర లాంటి దేనినో అనుసరిస్తుంది. "
+        "GoldBEES ఒక గోల్డ్ ETF.",
+    ),
+    Entry(
+        "dividend", "dividend",
+        "A dividend is a part of a company's profit paid to its shareholders. Companies are not "
+        "required to pay it, and the amount can change every year.",
+        "డివిడెండ్ అంటే కంపెనీ లాభంలో షేర్‌హోల్డర్లకు ఇచ్చే భాగం. దీన్ని ఇవ్వడం కంపెనీలకు తప్పనిసరి కాదు, మొత్తం ప్రతి ఏడాది మారవచ్చు.",
+    ),
+    Entry(
+        "volume", "volume",
+        "Volume is how many shares were traded in a period. Large volume means many people were "
+        "trading it.",
+        "వాల్యూమ్ అంటే ఒక కాలంలో ఎన్ని షేర్లు ట్రేడ్ అయ్యాయో. ఎక్కువ వాల్యూమ్ అంటే చాలా మంది దాన్ని ట్రేడ్ చేశారని అర్థం.",
+    ),
+]
+
+BY_ID = {e.id: e for e in GLOSSARY}
+
+
+def unreviewed_count() -> int:
+    return sum(1 for e in GLOSSARY if not e.reviewed)

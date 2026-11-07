@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from . import explainer, facts, numeric_gate, planner, refusal, ticker_resolver
+from ..retrieval import tier1
 
 _GENERIC_CLARIFY = {
     "te-IN": "మీరు ఏ కంపెనీ లేదా అంశం గురించి అడుగుతున్నారో కొంచెం స్పష్టంగా చెప్పగలరా?",
@@ -42,9 +43,17 @@ def handle(text: str) -> Answer:
     if p.action == "decline":
         return mk("decline", refusal.decline(lang).text)
 
-    # Concept questions are answered from the Tier-1 glossary (Phase 3).
+    # Concept questions are answered from the Tier-1 glossary (human-reviewable text,
+    # no LLM generation -> nothing to hallucinate).
     if p.intent == "concept":
-        return mk("concept_pending", "[[glossary Tier-1 — Phase 3]]")
+        entry, score = tier1.answer(text, lang)
+        if entry is None:
+            return mk("no_data", (refusal.NO_DATA.get(lang) or refusal.NO_DATA["en-IN"]).text)
+        answer_text = entry.text_te if lang == "te-IN" else entry.text_en
+        return mk("answer", answer_text, display={
+            "concept": entry.id, "visual": entry.visual,
+            "reviewed": entry.reviewed, "retrieval_score": round(score, 3),
+        })
 
     # Everything else needs a ticker.
     if not p.tickers:

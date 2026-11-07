@@ -22,6 +22,7 @@ GNANI_TTS_URL = os.getenv("GNANI_TTS_URL", "https://api.vachana.ai/api/v1/tts/in
 LLM_BASE_URL = os.getenv("LLM_BASE_URL", "").strip()
 LLM_API_KEY = os.getenv("LLM_API_KEY", "").strip()
 LLM_MODEL = os.getenv("LLM_MODEL", "").strip()
+LLM_EMBED_MODEL = os.getenv("LLM_EMBED_MODEL", "gemini-embedding-001").strip()
 
 # The header name is a Gnani-specific fact from docs/vaani_context.md.
 # Phase 1 confirms it empirically before anything depends on it.

@@ -51,6 +51,29 @@ All notable changes to Vaani Market. Dates are IST.
 - Numeric gate caught a real edge case (the "50" in "Nifty 50") — fixed by allowing
   name-embedded numbers. Explainer script-mixing (Bengali) fixed with a Telugu-only rule.
 
+## [Unreleased] — Phase 3 (Tier-1 glossary) — done
+### Added
+- `retrieval/glossary.py` — 12 starter entries, English source + natural spoken Telugu
+  DRAFTS (all `reviewed=False`); candlestick flagged `visual`.
+- `retrieval/tier1.py` — document-aware (1 entry = 1 chunk), Gemini `gemini-embedding-001`
+  embeddings, cosine top-k; concept answers returned from glossary text (no LLM generation).
+- `llm/adapter.py`: `embed()` over the OpenAI-compatible /embeddings endpoint.
+- `tests/test_tier1.py` (5) → **39 tests passing**. `probes/probe_glossary.py`.
+
+### Deviation (flagged)
+- Tier-1 uses Gemini embeddings instead of BGE-M3/E5 (Python 3.9, no GPU, deadline). Kept
+  behind a pluggable embedder. Consequence: Tier-1 latency > the report's 150ms local budget;
+  eval harness will measure the real figure.
+
+### Verified (live)
+- Concept routing: NSE/BSE 0.86, P/E 0.85, candlestick 0.82 (visual), dividend 0.82; a
+  non-lexical paraphrase correctly matched market_cap (0.765).
+- Known tie: "share market" vs "share" (0.745 vs 0.744) returns the share definition.
+
+### Pending
+- Tier-2 hybrid retrieval (company notes + 90d news) and Tier-3 remain interfaces/deferred;
+  why_moved currently uses live quote+series+headlines directly (not a hybrid-retrieval store).
+
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
 - Project scaffolding: git repo, `.gitignore` (committed before `.env`), Python 3.9 venv,

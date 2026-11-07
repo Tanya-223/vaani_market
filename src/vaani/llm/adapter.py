@@ -77,3 +77,20 @@ def chat_json(messages: list[dict[str, str]], **kwargs: Any) -> dict[str, Any]:
         return _json.loads(text)
     except Exception as exc:
         raise LLMError(f"model did not return valid JSON: {exc}; got: {res.text[:300]}")
+
+
+def embed(texts: list[str], *, model: str | None = None, timeout: float = 30.0) -> list[list[float]]:
+    """Embed a batch of texts via the OpenAI-compatible /embeddings endpoint."""
+    if not config.have_llm():
+        raise LLMError("LLM endpoint not configured — set LLM_* in .env")
+    url = config.LLM_BASE_URL.rstrip("/") + "/embeddings"
+    headers = {
+        "Authorization": f"Bearer {config.LLM_API_KEY}",
+        "Content-Type": "application/json",
+    }
+    body = {"model": model or config.LLM_EMBED_MODEL, "input": texts}
+    resp, _ = request_with_retry("POST", url, headers=headers, json=body, timeout=timeout)
+    if resp.status_code != 200:
+        raise LLMError(f"embeddings HTTP {resp.status_code}: {resp.text[:300]}")
+    data = resp.json().get("data", [])
+    return [row["embedding"] for row in data]
