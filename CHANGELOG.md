@@ -2,6 +2,24 @@
 
 All notable changes to Vaani Market. Dates are IST.
 
+## [Unreleased] — Phase 2 (agent core) — in progress
+### Added
+- `src/vaani/llm/adapter.py` — one function over an OpenAI-compatible chat/completions
+  endpoint (provider-agnostic, capped output, JSON mode). Decision: **Google Gemini Flash**
+  (`gemini-3.8-flash`), base `https://generativelanguage.googleapis.com/v1beta/openai/`.
+- `src/vaani/agent/ticker_resolver.py` — alias table (Latin + Telugu script) + fuzzy
+  (difflib) + phonetic matching; bare "HDFC" forced to a clarifying question; exposes
+  `keyterms()` for Prisma STT biasing.
+- `tests/test_ticker_resolver.py` — 13 tests, all passing.
+- `probes/probe_llm.py` — verifies Telugu generation + JSON output (run once LLM key added).
+- `pytest.ini`.
+
+### Decisions
+- No number-to-words layer (Phase 1 listening test: Timbre normalizes rupees/percent itself).
+
+### Pending
+- LLM endpoint credentials (Gemini) → then run `probe_llm.py`, build planner + explainer.
+
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
 - Project scaffolding: git repo, `.gitignore` (committed before `.env`), Python 3.9 venv,
