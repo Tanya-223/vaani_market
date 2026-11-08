@@ -219,3 +219,9 @@ banner until a native speaker verifies them (see [`docs/TELUGU_REVIEW.md`](docs/
 Vaani Market is a demonstration, not a deployable financial service. It is **not** SEBI-registered
 and gives no investment advice. Market data is delayed and unofficial. A production launch would
 require legal review and, for any personalised output, SEBI registration.
+
+## License
+
+[MIT](LICENSE) © 2026 Tanya Kontisetty. The speech models (Gnani Prisma/Timbre), the reasoning
+model (Google Gemini), and market data (Yahoo Finance) are third-party services under their own
+terms; this licence covers the Vaani Market code only.
