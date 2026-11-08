@@ -1,4 +1,5 @@
 # Vaani Market
+pitch doc : https://drive.google.com/file/d/1FgOmaz7zioz9aeBFg0j_bN7bAqEIVH5k/view?usp=sharing
 
 **A voice-first, multilingual market explainer for India that explains — and never advises.**
 
