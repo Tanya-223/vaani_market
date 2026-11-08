@@ -93,11 +93,15 @@ class Tier1Index:
 
     def answer(self, text: str, language: str = "te-IN", threshold: float = ANSWER_THRESHOLD):
         """Return (entry, score) for the best glossary match, or (None, top_score).
-        Tries the instant keyword fast-path first; falls back to embedding retrieval."""
+        Keyword fast-path is instant; the embedding fallback runs under a hard time budget
+        and degrades to 'no confident match' if it overruns (report §7.4)."""
         eid = keyword_hit(text)
         if eid and eid in glossary.BY_ID:
             return glossary.BY_ID[eid], 1.0
-        hits = self.query(text, k=5)
+        from .router import within_budget, TIER_BUDGET_MS
+        hits, ok = within_budget(lambda: self.query(text, k=5), TIER_BUDGET_MS[1], default=[])
+        if not ok:                              # embedding overran budget -> degrade
+            return None, 0.0
         if hits and hits[0].score >= threshold:
             return hits[0].entry, hits[0].score
         return None, (hits[0].score if hits else 0.0)

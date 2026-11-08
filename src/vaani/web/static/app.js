@@ -166,14 +166,15 @@ async function speak(sentences, t0, language){
   const jobs=sentences.map(s=>
     fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:s,language:language||"te-IN"})})
       .then(r=>r.ok?r.blob():null).catch(()=>null));
-  let first=false;
+  let ttfa=null;
   for(const job of jobs){
     const blob=await job; if(!blob)continue;
     await playBlob(player,blob);
-    if(!first){first=true;setStatus(`మొదటి ఆడియో ${((performance.now()-t0)/1000).toFixed(1)}s`);}
+    if(ttfa===null){ttfa=(performance.now()-t0)/1000;setStatus(`మొదటి ఆడియో ${ttfa.toFixed(1)}s`);}
   }
   card.classList.remove("speaking");
-  setStatus(`పూర్తయింది · ${((performance.now()-t0)/1000).toFixed(1)}s`);
+  // Show time-to-first-audio (the real responsiveness metric), NOT total incl. playback.
+  setStatus(ttfa!==null?`✓ మొదటి ఆడియో ${ttfa.toFixed(1)}s`:"సిద్ధం");
 }
 function playBlob(p,blob){return new Promise(res=>{p.src=URL.createObjectURL(blob);p.onended=res;p.onerror=res;p.play().catch(res);});}
 
