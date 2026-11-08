@@ -40,9 +40,9 @@ def split_sentences(text: str) -> list[str]:
     return [p.strip() for p in parts if p.strip()]
 
 
-def _turn_from_transcript(transcript: str, timings: dict) -> dict:
+def _turn_from_transcript(transcript: str, timings: dict, language: str | None = None) -> dict:
     t0 = time.monotonic()
-    ans = orchestrate.handle(transcript, session=_SESSION)
+    ans = orchestrate.handle(transcript, session=_SESSION, language=language)
     timings["agent_wall"] = round(time.monotonic() - t0, 3)
     return {
         "transcript": transcript,
@@ -133,7 +133,8 @@ class Handler(BaseHTTPRequestHandler):
         text = (data.get("text") or "").strip()
         if not text:
             return self._send_json({"error": "no text"}, status=400)
-        self._send_json(_turn_from_transcript(text, {}))
+        # Typed input: the UI's selected language forces the reply language.
+        self._send_json(_turn_from_transcript(text, {}, language=data.get("language")))
 
     def _api_tts(self):
         data = json.loads(self._read_body() or b"{}")

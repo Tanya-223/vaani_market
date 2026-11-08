@@ -204,6 +204,22 @@ All notable changes to Vaani Market. Dates are IST.
 - Hindi strings are DRAFT (`reviewed:false`) — see `docs/TELUGU_REVIEW.md` (now te + hi).
 - Other languages (Tamil, etc.) are a future add: the pipeline is language-agnostic; only the
   glossary + constants need translation per language.
+## [Unreleased] — Home-screen redesign + language selector
+### Added
+- Language selector (తెలుగు | हिन्दी | English, default Telugu). Switching changes ALL UI
+  chrome, suggestion chips, footer disclaimer, and the typed-reply language together. Voice
+  still auto-detects via Prisma and replies in the detected language.
+- Per-language `reviewed` flag surfaced: a draft banner shows for Telugu/Hindi (unverified),
+  none for English (source). Only languages with glossary + refusal text are shown.
+- Logo (sound-wave bars + rising line). "Learn the basics" row: 4 tappable SVG-icon cards
+  (stock, NSE/BSE, candlestick, market cap) that send the question; 4 example stock-question
+  chips below — all in the selected language.
+- Faint CSS grid behind content (muted so text contrast holds); animated SVG/CSS waveform
+  around the mic while listening. No stock photos / company logos / invented-data charts;
+  the candlestick stays labelled "illustrative".
+- `web/static/i18n.js` (UI strings + icons). Mobile-first; ≥44px touch targets, 4-col cards fit 390px.
+- Backend: `orchestrate.handle(..., language=...)` and `/api/ask_text` honour a forced UI
+  language for typed input; `/api/turn` (voice) keeps auto-detect.
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
 - Project scaffolding: git repo, `.gitignore` (committed before `.env`), Python 3.9 venv,

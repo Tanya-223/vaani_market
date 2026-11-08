@@ -31,9 +31,11 @@ class Answer:
     intent: str = ""
 
 
-def handle(text: str, session: "mem.SessionMemory | None" = None) -> Answer:
-    # Language for the pre-planner short-circuits (detected by script; the planner refines it).
-    g = langmod.detect(text)
+def handle(text: str, session: "mem.SessionMemory | None" = None,
+           language: str | None = None) -> Answer:
+    # `language` (set by the UI selector for typed input) forces the reply language.
+    # Voice input passes None, so Prisma's detected language is used instead.
+    g = language or langmod.detect(text)
 
     # Deterministic advice short-circuit — refuse WITHOUT calling the LLM.
     if advice.is_advice_request(text):
@@ -49,7 +51,7 @@ def handle(text: str, session: "mem.SessionMemory | None" = None) -> Answer:
                       display={"candidates": [c.symbol for c in amb.candidates]})
 
     p = planner.plan(text)
-    lang = p.language_out or g or "te-IN"
+    lang = language or p.language_out or g or "te-IN"
     disc = refusal.disclaimer(lang).text
 
     def mk(routing, msg, symbol=None, **kw):
