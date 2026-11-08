@@ -118,7 +118,7 @@ class Handler(BaseHTTPRequestHandler):
         if not audio:
             return self._send_json({"error": "empty audio"}, status=400)
         t0 = time.monotonic()
-        r = stt.transcribe(audio, language_code="te-IN")
+        r = stt.transcribe(audio, language_code="indic-auto")   # detect te/hi/en automatically
         timings = {
             "stt_wall": round(time.monotonic() - t0, 3),
             "stt_processing": r.processing_time,

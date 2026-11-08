@@ -73,29 +73,49 @@ def explain(fs: FactSheet, language: str = "te-IN", *, stricter: bool = False) -
 
 
 def template_answer(fs: FactSheet, language: str = "te-IN") -> str:
-    """Deterministic, code-built fallback (DRAFT Telugu). Cannot hallucinate numbers."""
+    """Deterministic, code-built fallback (DRAFT for te/hi). Cannot hallucinate numbers.
+    States the market-closed / as-of context when the data is stale."""
     q = fs.quote
-    if language != "te-IN":
-        parts = [f"{fs.name_en}: {q.price} {q.currency or ''}".strip()]
-        if q.change_pct is not None:
-            verb = "up" if q.change_pct >= 0 else "down"
-            parts.append(f"{verb} {abs(q.change_pct)}% from the previous close")
-        if fs.series and fs.series.ok and fs.series.period_return_pct is not None:
-            parts.append(f"{fs.series.period_return_pct}% over 30 days")
-        return ". ".join(parts) + "."
-    # Telugu (draft, needs review)
     closed = fs.is_stale or bool(q.market_state and q.market_state.upper() != "REGULAR")
-    verb = "పెరిగింది" if (q.change_pct or 0) >= 0 else "తగ్గింది"
-    prefix = "మార్కెట్ ప్రస్తుతం మూసి ఉంది. " if closed else ""
-    date_te = _human_date(fs.as_of or q.as_of)
-    s = f"{prefix}{fs.name_te} చివరి ధర {date_te} నాటికి {q.price} రూపాయలు" if closed \
-        else f"{fs.name_te} ధర {q.price} రూపాయలు"
-    if q.change_pct is not None:
-        s += f", మునుపటి ముగింపుతో పోలిస్తే {abs(q.change_pct)} శాతం {verb}"
+    date = _human_date(fs.as_of or q.as_of)
+    chg = q.change_pct
+    up = (chg or 0) >= 0
+    ret = fs.series.period_return_pct if (fs.series and fs.series.ok) else None
+
+    if language == "hi-IN":
+        s = "मार्केट अभी बंद है। " if closed else ""
+        s += f"{fs.name_en} का {'आख़िरी दाम ' + date + ' तक' if closed else 'दाम'} {q.price} रुपये"
+        if chg is not None:
+            s += f", पिछले क्लोज़ से {abs(chg)}% {'ऊपर' if up else 'नीचे'}"
+        s += "।"
+        if ret is not None:
+            s += f" पिछले 30 दिनों में {abs(ret)}% {'ऊपर' if ret >= 0 else 'नीचे'}।"
+        if not fs.has_cause_evidence:
+            s += " " + refusal.UNKNOWN_CAUSE["hi-IN"].text
+        return s
+
+    if language == "te-IN":
+        verb = "పెరిగింది" if up else "తగ్గింది"
+        s = "మార్కెట్ ప్రస్తుతం మూసి ఉంది. " if closed else ""
+        s += f"{fs.name_te} చివరి ధర {date} నాటికి {q.price} రూపాయలు" if closed \
+            else f"{fs.name_te} ధర {q.price} రూపాయలు"
+        if chg is not None:
+            s += f", మునుపటి ముగింపుతో పోలిస్తే {abs(chg)} శాతం {verb}"
+        s += "."
+        if ret is not None:
+            s += f" గత 30 రోజుల్లో {abs(ret)} శాతం {'పెరిగింది' if ret >= 0 else 'తగ్గింది'}."
+        if not fs.has_cause_evidence:
+            s += " " + refusal.UNKNOWN_CAUSE["te-IN"].text
+        return s
+
+    # English
+    s = "The market is closed now. " if closed else ""
+    s += f"{fs.name_en}'s {'last price as of ' + date + ' is' if closed else 'price is'} {q.price} {q.currency or ''}".rstrip()
+    if chg is not None:
+        s += f", {'up' if up else 'down'} {abs(chg)}% from the previous close"
     s += "."
-    if fs.series and fs.series.ok and fs.series.period_return_pct is not None:
-        tverb = "పెరిగింది" if fs.series.period_return_pct >= 0 else "తగ్గింది"
-        s += f" గత 30 రోజుల్లో {abs(fs.series.period_return_pct)} శాతం {tverb}."
+    if ret is not None:
+        s += f" Over the last 30 days it is {'up' if ret >= 0 else 'down'} {abs(ret)}%."
     if not fs.has_cause_evidence:
-        s += " " + (refusal.UNKNOWN_CAUSE["te-IN"].text)
+        s += " " + refusal.UNKNOWN_CAUSE["en-IN"].text
     return s

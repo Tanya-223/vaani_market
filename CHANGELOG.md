@@ -190,6 +190,20 @@ All notable changes to Vaani Market. Dates are IST.
 - price_check and market_overview now use the deterministic template (no LLM call): guarantees
   the market-closed/as-of wording and is faster. why_moved/trend keep the LLM explainer.
 
+## [Unreleased] — Multi-language: Hindi + English (Telugu was first)
+### Added
+- `agent/lang.py` — script-based language detector (te/hi/en) for the pre-planner short-circuits.
+- Hindi drafts for all 12 glossary entries, the 5 guardrail constants, clarify prompts; English
+  was already present. Glossary gains `Entry.text(language)`.
+- STT now `indic-auto` (detects te/hi/en from voice); TTS speaks the answer's language; the web
+  chips include Hindi + English examples.
+### Changed
+- Short-circuits (advice/ambiguous), clarify questions, concept answers, and the template
+  fallback are all language-aware now (te-IN / hi-IN / en-IN). Telugu routing unchanged (60 tests pass).
+### Note
+- Hindi strings are DRAFT (`reviewed:false`) — see `docs/TELUGU_REVIEW.md` (now te + hi).
+- Other languages (Tamil, etc.) are a future add: the pipeline is language-agnostic; only the
+  glossary + constants need translation per language.
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
 - Project scaffolding: git repo, `.gitignore` (committed before `.env`), Python 3.9 venv,

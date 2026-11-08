@@ -27,6 +27,11 @@ REFUSAL = {
         "కానీ ఈ కంపెనీ ఏం చేస్తుందో, ఈ రోజు దానికి ఏం జరిగిందో వివరించగలను. చెప్పమంటారా?",
         reviewed=False,
     ),
+    "hi-IN": Constant(
+        "मैं आपको कोई शेयर खरीदने या बेचने के लिए नहीं कह सकता — यह SEBI-रजिस्टर्ड सलाहकार का काम है। "
+        "लेकिन मैं बता सकता हूँ कि यह कंपनी क्या करती है और आज इसके साथ क्या हुआ। बताऊँ?",
+        reviewed=False,
+    ),
     "en-IN": Constant(
         "I can't tell you to buy or sell any share — that's the work of a SEBI-registered "
         "adviser. But I can explain what this company does and what happened to it today. "
@@ -42,6 +47,11 @@ DECLINE = {
         "ఒక కంపెనీకి ఏం జరిగిందో వివరించగలను.",
         reviewed=False,
     ),
+    "hi-IN": Constant(
+        "माफ़ कीजिए, यह मेरे काम के दायरे में नहीं है। लेकिन मैं स्टॉक मार्केट के बारे में या आज "
+        "किसी कंपनी के साथ क्या हुआ, समझा सकता हूँ।",
+        reviewed=False,
+    ),
     "en-IN": Constant(
         "Sorry, that's outside what I do. But I can explain the stock market, or what "
         "happened to a company today.",
@@ -52,6 +62,7 @@ DECLINE = {
 # Mandatory disclaimer, shown on screen AND spoken.
 DISCLAIMER = {
     "te-IN": Constant("విద్యా ప్రయోజనం కోసం మాత్రమే. ఇది పెట్టుబడి సలహా కాదు.", reviewed=False),
+    "hi-IN": Constant("सिर्फ़ शैक्षणिक जानकारी। यह निवेश सलाह नहीं है।", reviewed=False),
     "en-IN": Constant("Educational only. Not advice.", reviewed=True),
 }
 
@@ -60,12 +71,16 @@ UNKNOWN_CAUSE = {
     "te-IN": Constant(
         "ఈ కదలికను నేను చూడగలను, కానీ దానికి కారణాన్ని నిర్ధారించలేను.", reviewed=False
     ),
+    "hi-IN": Constant(
+        "मैं यह हलचल देख सकता हूँ, लेकिन इसका कारण पक्का नहीं बता सकता।", reviewed=False
+    ),
     "en-IN": Constant("I can see this movement, but I cannot confirm the reason.", reviewed=True),
 }
 
 # No-data honesty line (missing / unknown ticker).
 NO_DATA = {
     "te-IN": Constant("క్షమించండి, దీనికి నా దగ్గర డేటా లేదు.", reviewed=False),
+    "hi-IN": Constant("माफ़ कीजिए, इसके लिए मेरे पास डेटा नहीं है।", reviewed=False),
     "en-IN": Constant("Sorry, I don't have data for that.", reviewed=True),
 }
 

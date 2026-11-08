@@ -7,10 +7,11 @@ const $ = (id) => document.getElementById(id);
 
 const EXAMPLES = [
   "క్యాండిల్ చార్ట్ అంటే ఏమిటి?",
-  "GAIL షేర్ ఈ రోజు ఎందుకు పడింది?",
-  "Nifty ఈ రోజు ఎలా ఉంది?",
-  "HDFC బ్యాంక్ షేర్ కొనమంటారా?",
-  "HDFC ఈ రోజు ఏమైంది?",
+  "GAIL ఈ రోజు ఎందుకు పడింది?",
+  "कैंडलस्टिक चार्ट क्या है?",
+  "GAIL आज कैसा रहा?",
+  "What is a candlestick chart?",
+  "Should I buy HDFC Bank?",
 ];
 
 let audioCtx, mediaStream, processor, source, chunks = [], inRate = 48000;
@@ -76,7 +77,7 @@ async function handleTurn(data, t0) {
   renderHeadlines(data.display || {});
   renderNote(data.display || {});
   renderMeta(data);
-  await speak(data.sentences || [], t0);
+  await speak(data.sentences || [], t0, data.language || "te-IN");
 }
 
 function renderMeta(data){
@@ -158,12 +159,12 @@ function candlestick(){
 /* sentence-chunked TTS: play in order; TTFA = first audio */
 /* sentence-chunked TTS: fetch ALL sentences in parallel (keeping order) so the next
    clip is ready when the current ends -> fast first-audio AND no gap at full stops. */
-async function speak(sentences, t0){
+async function speak(sentences, t0, language){
   if(!sentences.length){setStatus("సిద్ధం");return;}
   setStatus("మాట్లాడుతోంది", true);
   const player=$("player"),card=$("answerCard");card.classList.add("speaking");
   const jobs=sentences.map(s=>
-    fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:s,language:"te-IN"})})
+    fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:s,language:language||"te-IN"})})
       .then(r=>r.ok?r.blob():null).catch(()=>null));
   let first=false;
   for(const job of jobs){

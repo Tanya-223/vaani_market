@@ -8,11 +8,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from . import advice, explainer, facts, memory as mem, numeric_gate, planner, refusal, ticker_resolver
+from . import advice, explainer, facts, lang as langmod, memory as mem, numeric_gate, planner, refusal, ticker_resolver
 from ..retrieval import tier1, tier2
 
 _GENERIC_CLARIFY = {
     "te-IN": "మీరు ఏ కంపెనీ లేదా అంశం గురించి అడుగుతున్నారో కొంచెం స్పష్టంగా చెప్పగలరా?",
+    "hi-IN": "आप किस कंपनी या विषय के बारे में पूछ रहे हैं, थोड़ा साफ़ बताएँगे?",
     "en-IN": "Could you say a bit more clearly which company or topic you mean?",
 }
 
@@ -31,23 +32,24 @@ class Answer:
 
 
 def handle(text: str, session: "mem.SessionMemory | None" = None) -> Answer:
-    # Deterministic advice short-circuit — refuse WITHOUT calling the LLM. This is a
-    # stronger guardrail (works even if the LLM is unavailable) and saves a call.
+    # Language for the pre-planner short-circuits (detected by script; the planner refines it).
+    g = langmod.detect(text)
+
+    # Deterministic advice short-circuit — refuse WITHOUT calling the LLM.
     if advice.is_advice_request(text):
-        return Answer("refuse", refusal.refusal("te-IN").text, "te-IN",
-                      refusal.disclaimer("te-IN").text, intent="advice_request")
+        return Answer("refuse", refusal.refusal(g).text, g,
+                      refusal.disclaimer(g).text, intent="advice_request")
 
     # Deterministic ambiguous-ticker short-circuit: a shared prefix like "HDFC" with no
-    # Bank/Life/AMC qualifier must ask which one — regardless of how the planner would
-    # classify the sentence (this fixes vague "how is HDFC" / "tell me about HDFC").
+    # Bank/Life/AMC qualifier must ask which one, regardless of planner classification.
     amb = ticker_resolver.resolve(text)
     if amb.status == "ambiguous":
-        return Answer("clarify", ticker_resolver.clarifying_question_te(amb), "te-IN",
-                      refusal.disclaimer("te-IN").text, intent="ambiguous_ticker",
+        return Answer("clarify", ticker_resolver.clarifying_question(amb, g), g,
+                      refusal.disclaimer(g).text, intent="ambiguous_ticker",
                       display={"candidates": [c.symbol for c in amb.candidates]})
 
     p = planner.plan(text)
-    lang = p.language_out or "te-IN"
+    lang = p.language_out or g or "te-IN"
     disc = refusal.disclaimer(lang).text
 
     def mk(routing, msg, symbol=None, **kw):
@@ -66,8 +68,7 @@ def handle(text: str, session: "mem.SessionMemory | None" = None) -> Answer:
         entry, score = tier1.answer(text, lang)
         if entry is None:
             return mk("no_data", (refusal.NO_DATA.get(lang) or refusal.NO_DATA["en-IN"]).text)
-        answer_text = entry.text_te if lang == "te-IN" else entry.text_en
-        return mk("answer", answer_text, display={
+        return mk("answer", entry.text(lang), display={
             "concept": entry.id, "visual": entry.visual,
             "reviewed": entry.reviewed, "retrieval_score": round(score, 3),
         })
@@ -83,7 +84,7 @@ def handle(text: str, session: "mem.SessionMemory | None" = None) -> Answer:
     else:
         res = ticker_resolver.resolve(p.tickers[0], lang)
     if res.status == "ambiguous":
-        return mk("clarify", ticker_resolver.clarifying_question_te(res),
+        return mk("clarify", ticker_resolver.clarifying_question(res, lang),
                   display={"candidates": [c.symbol for c in res.candidates]})
     if res.status == "none":
         return mk("no_data", (refusal.NO_DATA.get(lang) or refusal.NO_DATA["en-IN"]).text)

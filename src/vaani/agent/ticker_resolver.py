@@ -184,10 +184,23 @@ def _cand(symbol: str, score: float) -> Candidate:
     return Candidate(i.symbol, i.name_en, i.name_te, round(score, 3))
 
 
-# Telugu clarifying question (DRAFT — needs native-speaker review).
-def clarifying_question_te(res: Resolution) -> str:
-    names = " లేదా ".join(c.name_te for c in res.candidates)
-    return f"మీరు {names} గురించి అడుగుతున్నారా?"  # "Are you asking about X or Y?"
+# Clarifying question (DRAFT Telugu/Hindi — needs native-speaker review).
+_CLARIFY = {
+    "te-IN": ("మీరు {names} గురించి అడుగుతున్నారా?", " లేదా "),
+    "hi-IN": ("क्या आप {names} के बारे में पूछ रहे हैं?", " या "),
+    "en-IN": ("Are you asking about {names}?", " or "),
+}
+
+
+def clarifying_question(res: "Resolution", language: str = "te-IN") -> str:
+    tmpl, sep = _CLARIFY.get(language, _CLARIFY["en-IN"])
+    # Telugu uses Telugu names; Hindi/English use the English names.
+    names = sep.join((c.name_te if language == "te-IN" else c.name_en) for c in res.candidates)
+    return tmpl.format(names=names)
+
+
+def clarifying_question_te(res: "Resolution") -> str:   # back-compat
+    return clarifying_question(res, "te-IN")
 
 
 def keyterms() -> list[str]:

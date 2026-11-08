@@ -20,20 +20,25 @@ ANSWER_THRESHOLD = 0.55   # below this, we don't claim a glossary match
 # common beginner questions answer INSTANTLY with no embedding call (big latency win), and
 # resolves the "share market" vs "share" tie deterministically.
 _KEYWORDS: list[tuple[str, str]] = [
-    ("క్యాండిల్", "candlestick"), ("candle", "candlestick"),
+    ("క్యాండిల్", "candlestick"), ("candle", "candlestick"), ("कैंडल", "candlestick"),
     ("p/e", "pe_ratio"), ("పి/ఈ", "pe_ratio"), ("పిఈ", "pe_ratio"), ("రేషియో", "pe_ratio"),
+    ("पी/ई", "pe_ratio"), ("पी.ई", "pe_ratio"), ("रेशियो", "pe_ratio"),
     ("market cap", "market_cap"), ("మార్కెట్ క్యాప్", "market_cap"), ("మొత్తం విలువ", "market_cap"),
-    ("circuit", "circuit_limit"), ("సర్క్యూట్", "circuit_limit"),
-    ("demat", "demat_account"), ("డీమ్యాట్", "demat_account"),
-    ("dividend", "dividend"), ("డివిడెండ్", "dividend"),
-    ("volume", "volume"), ("వాల్యూమ్", "volume"),
+    ("मार्केट कैप", "market_cap"), ("कुल कीमत", "market_cap"),
+    ("circuit", "circuit_limit"), ("సర్క్యూట్", "circuit_limit"), ("सर्किट", "circuit_limit"),
+    ("demat", "demat_account"), ("డీమ్యాట్", "demat_account"), ("डीमैट", "demat_account"),
+    ("dividend", "dividend"), ("డివిడెండ్", "dividend"), ("डिविडेंड", "dividend"),
+    ("volume", "volume"), ("వాల్యూమ్", "volume"), ("वॉल्यूम", "volume"),
     ("goldbees", "etf"), ("గోల్డ్ బీస్", "etf"), ("etf", "etf"), ("ఇటిఎఫ్", "etf"),
     ("nse", "nse_bse"), ("bse", "nse_bse"),
-    ("sensex", "nifty_sensex"), ("సెన్సెక్స్", "nifty_sensex"),
-    ("nifty", "nifty_sensex"), ("నిఫ్టీ", "nifty_sensex"),
+    ("sensex", "nifty_sensex"), ("సెన్సెక్స్", "nifty_sensex"), ("सेंसेक्स", "nifty_sensex"),
+    ("nifty", "nifty_sensex"), ("నిఫ్టీ", "nifty_sensex"), ("निफ्टी", "nifty_sensex"),
     ("share market", "stock_market"), ("stock market", "stock_market"),
     ("షేర్ మార్కెట్", "stock_market"), ("స్టాక్ మార్కెట్", "stock_market"), ("మార్కెట్", "stock_market"),
+    ("शेयर बाज़ार", "stock_market"), ("शेयर बाजार", "stock_market"), ("स्टॉक मार्केट", "stock_market"),
+    ("बाज़ार", "stock_market"), ("बाजार", "stock_market"),
     ("స్టాక్", "stock_share"), ("షేర్", "stock_share"), ("stock", "stock_share"), ("share", "stock_share"),
+    ("स्टॉक", "stock_share"), ("शेयर", "stock_share"),
 ]
 
 
