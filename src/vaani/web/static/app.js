@@ -156,13 +156,18 @@ function candlestick(){
 }
 
 /* sentence-chunked TTS: play in order; TTFA = first audio */
+/* sentence-chunked TTS: fetch ALL sentences in parallel (keeping order) so the next
+   clip is ready when the current ends -> fast first-audio AND no gap at full stops. */
 async function speak(sentences, t0){
   if(!sentences.length){setStatus("సిద్ధం");return;}
   setStatus("మాట్లాడుతోంది", true);
-  const player=$("player"),card=$("answerCard");card.classList.add("speaking");let first=false;
-  for(const s of sentences){
-    let blob;
-    try{const r=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:s,language:"te-IN"})});if(!r.ok)continue;blob=await r.blob();}catch(e){continue;}
+  const player=$("player"),card=$("answerCard");card.classList.add("speaking");
+  const jobs=sentences.map(s=>
+    fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:s,language:"te-IN"})})
+      .then(r=>r.ok?r.blob():null).catch(()=>null));
+  let first=false;
+  for(const job of jobs){
+    const blob=await job; if(!blob)continue;
     await playBlob(player,blob);
     if(!first){first=true;setStatus(`మొదటి ఆడియో ${((performance.now()-t0)/1000).toFixed(1)}s`);}
   }
