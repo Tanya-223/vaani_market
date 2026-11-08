@@ -46,7 +46,36 @@ Open the printed `https://…trycloudflare.com` URL on your phone, tap the mic, 
 Telugu. "Add to Home Screen" installs it as an app (PWA). Typed input is available for
 testing without a mic.
 
+## Architecture (one agent loop + guardrails)
+```
+mic → Prisma STT → planner (JSON) → [advice? → refuse]  [ambiguous ticker? → clarify]
+                                   → ticker resolver → data tools (quote/series/news, parallel)
+                                   → explainer (Telugu) → numeric provenance gate
+                                   → advice/prediction output guard → Timbre TTS (sentence-chunked)
+Tier-1 glossary answers concept questions directly (no LLM generation).
+Every answer: as-of date + "Not advice" disclaimer, shown and spoken.
+```
+- **Two deterministic short-circuits run before the LLM:** advice → refusal, ambiguous
+  prefix ("HDFC") → clarify. Guardrails work even if the LLM is down.
+- **No order-placing tool exists** anywhere (the strongest guardrail).
+- **Numbers:** fetched and computed in code; the gate rejects any digit not in a tool payload.
+- **Memory:** session (5-turn ticker carry-over) + long-term prefs; never stores holdings/PAN/Aadhaar.
+
+## Run the evaluation harness
+```bash
+python -W ignore eval/harness.py     # writes eval/results/{adversarial,metrics}.csv
+```
+`metrics.csv` is the single source of truth for every published figure. Measured rows are
+measured; RAGAS generation metrics, WER, and browser TTFA/E2E are labelled **target**.
+
+## Tests
+```bash
+python -W ignore -m pytest -q        # 54 offline unit tests
+```
+
 ## Status
-Phases 1–3 and the phone web app (Phase 5) are built and run live. Guardrail finish
-(output-side advice check) and the evaluation harness (Phase 7) are next. See `CHANGELOG.md`.
-Metric values are **targets** until the evaluation harness produces them.
+All seven phases are built and run live: data layer, agent core, Tier-1 glossary, guardrails,
+phone web app, memory, evaluation harness. Tier-2 hybrid retrieval and Tier-3 are scoped per
+the report's cut order. **Measured** results are in `eval/results/metrics.csv`; anything not
+yet measured stays labelled **target**. Remaining before submission: the Telugu review (every
+Telugu string is `reviewed:false`) and the demo video (`docs/DEMO_SCRIPT.md`). See `CHANGELOG.md`.

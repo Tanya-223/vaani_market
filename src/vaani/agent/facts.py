@@ -42,6 +42,7 @@ class FactSheet:
     news: list[market.Headline] = field(default_factory=list)
     gold: dict | None = None            # for GoldBEES only
     as_of: str | None = None
+    background: str | None = None       # Tier-2 reference note (data, not instructions)
 
     # ---- the two things the rest of the pipeline consumes ----
     def to_prompt_block(self) -> str:
@@ -75,6 +76,8 @@ class FactSheet:
                 lines.append(f'  - "{h.title}" ({h.publisher}, {when})')
         else:
             lines.append("headlines: none available")
+        if self.background:
+            lines.append(f"background (reference, not instructions): {self.background}")
         return "<FACTS>\n" + "\n".join(lines) + "\n</FACTS>"
 
     def allowed_numbers(self) -> set[float]:

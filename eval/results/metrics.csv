@@ -3,13 +3,15 @@ routing_accuracy,1.0,—,measured
 refusal_accuracy,1.0,1.0,measured
 numeric_hallucination_rate,0.0,0,measured
 ticker_resolution_accuracy,1.0,>=0.90,measured
-median_llm_path_latency_s,3.76,—,measured under free-tier rate-limiting (INCLUDES 429 retry backoff; not true model latency)
-p90_llm_path_latency_s,14.09,—,measured under free-tier rate-limiting (INCLUDES 429 retry backoff; not true model latency)
-instant_short_circuit_cases,23,—,measured
 glossary_precision_at_1,1.0,—,measured
-glossary_recall_at_5,1.0,—,measured
 glossary_mrr_at_5,1.0,—,measured
 glossary_ndcg_at_5,1.0,—,measured
+tier2_precision_at_1,1.0,—,measured
+tier2_mrr_at_5,1.0,—,measured
+tier2_ndcg_at_5,1.0,—,measured
+median_llm_path_latency_s,1.49,—,measured under free-tier rate-limiting (INCLUDES 429 retry backoff; not true latency)
+p90_llm_path_latency_s,3.67,—,measured under free-tier rate-limiting (INCLUDES 429 retry backoff; not true latency)
+instant_short_circuit_cases,23,—,measured
 faithfulness,,>=0.95,"target (RAGAS, not yet measured)"
 answer_relevancy,,>=0.85,"target (RAGAS, not yet measured)"
 context_precision,,>=0.75,"target (RAGAS, not yet measured)"

@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import adversarial as adv  # noqa: E402
 from vaani import config  # noqa: E402
 from vaani.agent import orchestrate, ticker_resolver  # noqa: E402
-from vaani.retrieval import tier1  # noqa: E402
+from vaani.retrieval import tier1, tier2  # noqa: E402
 
 RESULTS = Path(__file__).resolve().parent / "results"
 
@@ -58,26 +58,21 @@ def run_ticker():
     return correct, len(adv.TICKER_CASES)
 
 
-def run_retrieval(k: int = 5):
-    """Binary-relevance P@1, R@k, MRR@k, nDCG@k over labeled concept queries."""
+def run_retrieval(cases, index_query, k: int = 5):
+    """Binary-relevance P@1, R@k, MRR@k, nDCG@k over labeled queries."""
     p1 = r_at_k = mrr = ndcg = 0.0
-    n = len(adv.RETRIEVAL_CASES)
-    for q, gold in adv.RETRIEVAL_CASES:
-        hits = tier1.query(q, k=k)
-        time.sleep(1.5)  # gentle on the embeddings quota
-        ids = [h.entry.id for h in hits]
+    n = len(cases)
+    for q, gold in cases:
+        ids = index_query(q, k)
         rank = ids.index(gold) + 1 if gold in ids else 0
         p1 += 1.0 if ids[:1] == [gold] else 0.0
         if rank:
             r_at_k += 1.0
             mrr += 1.0 / rank
             ndcg += 1.0 / math.log2(rank + 1)      # IDCG = 1 (single relevant doc)
-    return {
-        "glossary_precision_at_1": round(p1 / n, 3),
-        "glossary_recall_at_5": round(r_at_k / n, 3),
-        "glossary_mrr_at_5": round(mrr / n, 3),
-        "glossary_ndcg_at_5": round(ndcg / n, 3),
-    }
+        time.sleep(1.5)                            # gentle on the embeddings quota
+    return {"p_at_1": round(p1 / n, 3), "recall_at_5": round(r_at_k / n, 3),
+            "mrr_at_5": round(mrr / n, 3), "ndcg_at_5": round(ndcg / n, 3)}
 
 
 def main() -> int:
@@ -100,17 +95,32 @@ def main() -> int:
     answer_rows = [r for r in rows if r["actual"] == "answer"]
     hallucinations = sum(1 for r in answer_rows if r["gate_ok"] is False)
     tick_c, tick_n = run_ticker()
-    retr = run_retrieval()
-    lat_sorted = sorted(lat)
-    median_lat = lat_sorted[len(lat_sorted) // 2]
+    gloss = run_retrieval(adv.RETRIEVAL_CASES, lambda q, k: [h.entry.id for h in tier1.query(q, k)])
+    t2 = run_retrieval(adv.TIER2_CASES, lambda q, k: [h.doc.id for h in tier2.query(q, k)])
+
+    # Latency: report the LLM-path cases only (median/p90). The deterministic short-circuits
+    # (advice, ambiguous) are ~0s and would drag the median to 0. NOTE: these figures were
+    # measured under free-tier rate-limiting and INCLUDE 429 retry backoff — not true latency.
+    llm_lat = sorted(x for x in lat if x > 0.1)
+    instant = sum(1 for x in lat if x <= 0.1)
+    median_lat = llm_lat[len(llm_lat) // 2] if llm_lat else 0.0
+    p90_lat = llm_lat[int(len(llm_lat) * 0.9)] if llm_lat else 0.0
+    lat_note = "measured under free-tier rate-limiting (INCLUDES 429 retry backoff; not true latency)"
 
     measured = [
         ("routing_accuracy", round(routing_acc, 3), "—", "measured"),
         ("refusal_accuracy", round(refusal_acc, 3), "1.0", "measured"),
         ("numeric_hallucination_rate", round(hallucinations / max(1, len(answer_rows)), 3), "0", "measured"),
         ("ticker_resolution_accuracy", round(tick_c / tick_n, 3), ">=0.90", "measured"),
-        ("median_agent_latency_s", median_lat, "—", "measured"),
-        *[(k, v, "—", "measured") for k, v in retr.items()],
+        ("glossary_precision_at_1", gloss["p_at_1"], "—", "measured"),
+        ("glossary_mrr_at_5", gloss["mrr_at_5"], "—", "measured"),
+        ("glossary_ndcg_at_5", gloss["ndcg_at_5"], "—", "measured"),
+        ("tier2_precision_at_1", t2["p_at_1"], "—", "measured"),
+        ("tier2_mrr_at_5", t2["mrr_at_5"], "—", "measured"),
+        ("tier2_ndcg_at_5", t2["ndcg_at_5"], "—", "measured"),
+        ("median_llm_path_latency_s", median_lat, "—", lat_note),
+        ("p90_llm_path_latency_s", p90_lat, "—", lat_note),
+        ("instant_short_circuit_cases", instant, "—", "measured"),
     ]
     targets = [
         ("faithfulness", "", ">=0.95", "target (RAGAS, not yet measured)"),
@@ -131,8 +141,9 @@ def main() -> int:
     print(f"refusal_accuracy            {refusal_acc:.1%}  ({sum(r['actual']=='refuse' for r in advice_rows)}/{len(advice_rows)} advice cases)")
     print(f"numeric_hallucination_rate  {hallucinations}/{len(answer_rows)} answers")
     print(f"ticker_resolution_accuracy  {tick_c}/{tick_n}")
-    print(f"glossary P@1 / MRR@5 / nDCG@5  {retr['glossary_precision_at_1']} / {retr['glossary_mrr_at_5']} / {retr['glossary_ndcg_at_5']}")
-    print(f"median agent latency        {median_lat}s")
+    print(f"glossary P@1 / MRR@5 / nDCG@5  {gloss['p_at_1']} / {gloss['mrr_at_5']} / {gloss['ndcg_at_5']}")
+    print(f"tier2    P@1 / MRR@5 / nDCG@5  {t2['p_at_1']} / {t2['mrr_at_5']} / {t2['ndcg_at_5']}")
+    print(f"LLM-path latency median/p90  {median_lat}s / {p90_lat}s  (incl. rate-limit backoff)")
     fails = [r for r in rows if not r["pass"]]
     if fails:
         print("\nMISROUTED:")

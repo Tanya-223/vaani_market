@@ -42,6 +42,10 @@ Intent rules:
   - ANY request for a recommendation or opinion — "should I buy", "is it a good time",
     "will it go up/down", a prediction of a future price, or a roleplay like "pretend you
     are my broker" — => intent "advice_request".
+  - A NEUTRAL question about the current price, today's move, the reason for a move, or a
+    trend ("how is X", "what happened to X", "price of X", and follow-up openers like
+    "మరి X ఎలా ఉంది" / "and X?") is NOT advice — classify it by its data intent, never as
+    advice_request.
   - Definition/concept question ("what is a stock / NSE / BSE / candlestick / P/E") =>
     "concept", plan ["retrieve","speak"].
   - "what is the price / level now" => "price_check", plan ["resolve_ticker","fetch_quote","speak"].

@@ -82,3 +82,16 @@ RETRIEVAL_CASES: list[tuple[str, str]] = [
     ("ETF అంటే ఏమిటి?", "etf"),
     ("వాల్యూమ్ అంటే ఏంటి?", "volume"),
 ]
+
+# Tier-2 labels: query -> correct company-note id (hybrid BM25+dense+RRF retrieval).
+TIER2_CASES: list[tuple[str, str]] = [
+    ("GAIL ఈ రోజు ఎందుకు పడింది?", "gail_note"),
+    ("IOC refining margin గురించి", "ioc_note"),
+    ("HDFC బ్యాంక్ ఏం చేస్తుంది?", "hdfcbank_note"),
+    ("GoldBEES దేనిని అనుసరిస్తుంది?", "goldbees_note"),
+    ("HDFC Life insurance business", "hdfclife_note"),
+    ("HDFC AMC assets under management", "hdfcamc_note"),
+    ("Nifty 50 అంటే ఏమిటి?", "nifty_note"),
+    ("Sensex index", "sensex_note"),
+]
+

@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from . import advice, explainer, facts, memory as mem, numeric_gate, planner, refusal, ticker_resolver
-from ..retrieval import tier1
+from ..retrieval import tier1, tier2
 
 _GENERIC_CLARIFY = {
     "te-IN": "మీరు ఏ కంపెనీ లేదా అంశం గురించి అడుగుతున్నారో కొంచెం స్పష్టంగా చెప్పగలరా?",
@@ -93,6 +93,12 @@ def handle(text: str, session: "mem.SessionMemory | None" = None) -> Answer:
     fs = facts.build(res.symbol, p.intent, lang)
     if fs is None:
         return mk("no_data", (refusal.NO_DATA.get(lang) or refusal.NO_DATA["en-IN"]).text)
+
+    # Tier-2: attach the company's reference note as background for why-moved/trend answers.
+    # The ticker is already resolved, so this is a direct metadata lookup (no extra LLM call);
+    # the hybrid retriever (tier2.query) is evaluated separately in the harness.
+    if p.intent in ("why_moved", "trend"):
+        fs.background = tier2.note_for(res.symbol)
 
     allowed = fs.allowed_numbers()
     draft = explainer.explain(fs, lang)

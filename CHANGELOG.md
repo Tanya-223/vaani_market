@@ -146,6 +146,26 @@ All notable changes to Vaani Market. Dates are IST.
   committed 40/40 metrics without a re-run; flagged for deliberate tuning.
 - Web server must be restarted to pick up memory wiring (the demo instance predates it).
 
+## [Unreleased] — Tier-2 retrieval + planner fix + submission artifacts — done
+### Added
+- `retrieval/corpus.py` — 8 factual company/instrument notes with metadata (ticker/sector/type).
+- `retrieval/tier2.py` — hybrid retrieval: BM25 + dense (Gemini) fused with Reciprocal Rank
+  Fusion, metadata filter, query rewriting. Cross-encoder reranker intentionally omitted
+  (first in the report's cut order). `note_for()` enriches why-moved/trend answers.
+- `tests/test_tier2.py` (5) -> **59 tests passing**. `probes/probe_tier2.py`.
+- `docs/DEMO_SCRIPT.md` (video recording script) and `docs/REPORT_FIGURES.md` (measured
+  figures for the report). README expanded (architecture, eval, status).
+
+### Fixed
+- Planner over-refusal: a neutral "how is X / మరి X ఎలా ఉంది" is no longer misclassified as
+  advice. Verified: "మరి IOC ఎలా ఉంది?" now answers (IOC.NS) and the follow-up carries IOC.
+- Harness now reports honest LLM-path latency (median/p90 over non-short-circuit cases) baked
+  in, so re-runs stay truthful.
+
+### Measured (eval/results/metrics.csv, 2026-11-08)
+- routing 100% (40/40); refusal 100% (18/18); numeric hallucination 0; ticker 16/16;
+  glossary AND tier2 retrieval P@1/MRR@5/nDCG@5 = 1.0; LLM-path latency median 1.49s / p90 3.67s.
+
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
 - Project scaffolding: git repo, `.gitignore` (committed before `.env`), Python 3.9 venv,
