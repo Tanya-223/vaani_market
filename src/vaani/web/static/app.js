@@ -134,16 +134,24 @@ function lineChart(cl){
 
 /* illustrative (synthetic) candlestick anatomy — labeled, marked as example */
 function candlestick(){
-  return `<div class="chartwrap"><svg viewBox="0 0 320 180" aria-label="candlestick example">
-    <text x="6" y="14" fill="var(--muted)" font-size="11">ఉదాహరణ · illustrative</text>
-    <line x1="92" y1="34" x2="92" y2="150" stroke="var(--up)" stroke-width="2"/>
-    <rect x="76" y="66" width="32" height="58" rx="3" fill="var(--up)"/>
-    <line x1="214" y1="44" x2="214" y2="158" stroke="var(--down)" stroke-width="2"/>
-    <rect x="198" y="74" width="32" height="54" rx="3" fill="var(--down)"/>
-    <text x="118" y="60" fill="var(--muted)" font-size="10">విక్ (wick)</text>
-    <text x="118" y="100" fill="var(--muted)" font-size="10">బాడీ (body)</text>
-    <text x="60" y="172" fill="#48d06f" font-size="10.5">ఆకుపచ్చ · పెరిగింది</text>
-    <text x="196" y="172" fill="#f0787a" font-size="10.5">ఎరుపు · తగ్గింది</text>
+  return `<div class="chartwrap"><svg viewBox="0 0 300 192" aria-label="candlestick example">
+    <text x="4" y="13" fill="var(--muted)" font-size="10.5">ఒక రోజు ధర కదలిక · ఉదాహరణ (illustrative)</text>
+    <line x1="10" y1="40" x2="290" y2="40" stroke="var(--grid)" stroke-width="1"/>
+    <line x1="10" y1="96" x2="290" y2="96" stroke="var(--grid)" stroke-width="1"/>
+    <line x1="10" y1="152" x2="290" y2="152" stroke="var(--grid)" stroke-width="1"/>
+    <!-- green candle (closed higher) -->
+    <line x1="96" y1="34" x2="96" y2="158" stroke="var(--up)" stroke-width="2.5" stroke-linecap="round"/>
+    <rect x="78" y="66" width="36" height="58" rx="4" fill="var(--up)" stroke="#0a7a0a" stroke-width="1"/>
+    <!-- red candle (closed lower) -->
+    <line x1="208" y1="44" x2="208" y2="166" stroke="var(--down)" stroke-width="2.5" stroke-linecap="round"/>
+    <rect x="190" y="74" width="36" height="52" rx="4" fill="var(--down)" stroke="#a82e2e" stroke-width="1"/>
+    <!-- leaders + labels -->
+    <line x1="96" y1="40" x2="134" y2="40" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 2"/>
+    <text x="138" y="44" fill="var(--ink-2)" font-size="11">విక్ (wick)</text>
+    <line x1="114" y1="95" x2="138" y2="95" stroke="var(--muted)" stroke-width="1" stroke-dasharray="2 2"/>
+    <text x="142" y="99" fill="var(--ink-2)" font-size="11">బాడీ (body)</text>
+    <text x="52" y="184" fill="#48d06f" font-size="11">ఆకుపచ్చ · పెరిగింది</text>
+    <text x="178" y="184" fill="#f0787a" font-size="11">ఎరుపు · తగ్గింది</text>
   </svg></div>`;
 }
 
@@ -151,13 +159,14 @@ function candlestick(){
 async function speak(sentences, t0){
   if(!sentences.length){setStatus("సిద్ధం");return;}
   setStatus("మాట్లాడుతోంది", true);
-  const player=$("player");let first=false;
+  const player=$("player"),card=$("answerCard");card.classList.add("speaking");let first=false;
   for(const s of sentences){
     let blob;
     try{const r=await fetch("/api/tts",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:s,language:"te-IN"})});if(!r.ok)continue;blob=await r.blob();}catch(e){continue;}
     await playBlob(player,blob);
     if(!first){first=true;setStatus(`మొదటి ఆడియో ${((performance.now()-t0)/1000).toFixed(1)}s`);}
   }
+  card.classList.remove("speaking");
   setStatus(`పూర్తయింది · ${((performance.now()-t0)/1000).toFixed(1)}s`);
 }
 function playBlob(p,blob){return new Promise(res=>{p.src=URL.createObjectURL(blob);p.onended=res;p.onerror=res;p.play().catch(res);});}

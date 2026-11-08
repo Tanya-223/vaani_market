@@ -30,3 +30,12 @@ def test_glossary_all_telugu_unreviewed():
 
 def test_candlestick_has_visual():
     assert glossary.BY_ID["candlestick"].visual == "candlestick"
+
+
+def test_keyword_fastpath_routes_and_resolves_share_market_tie():
+    from vaani.retrieval.tier1 import keyword_hit
+    assert keyword_hit("షేర్ మార్కెట్ అంటే ఏమిటి?") == "stock_market"   # the tie, fixed
+    assert keyword_hit("స్టాక్ అంటే ఏమిటి?") == "stock_share"
+    assert keyword_hit("క్యాండిల్ చార్ట్ అంటే ఏమిటి?") == "candlestick"
+    assert keyword_hit("P/E రేషియో అంటే ఏమిటి?") == "pe_ratio"
+    assert keyword_hit("ఈ రోజు వాతావరణం ఎలా ఉంది?") is None          # non-concept -> no hit

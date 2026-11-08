@@ -21,7 +21,7 @@
   body{
     background:radial-gradient(1200px 500px at 50% -10%,#15203c 0%,var(--plane) 55%);
     color:var(--ink); font-family:"Noto Sans Telugu",system-ui,-apple-system,sans-serif;
-    padding:18px 16px 150px; max-width:560px; margin:0 auto; min-height:100vh;
+    padding:18px 16px 188px; max-width:560px; margin:0 auto; min-height:100vh;
   }
   header{display:flex;align-items:center;gap:12px;margin:4px 0 6px}
   .logo{width:40px;height:40px;border-radius:11px;flex:0 0 auto;
@@ -39,7 +39,9 @@
   .chip:active{transform:scale(.97);background:var(--surface-2)}
 
   .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
-    padding:15px;margin:12px 0;box-shadow:0 1px 0 rgba(255,255,255,.03),0 12px 30px rgba(0,0,0,.25)}
+    padding:15px;margin:12px 0;box-shadow:0 1px 0 rgba(255,255,255,.03),0 12px 30px rgba(0,0,0,.25);
+    transition:box-shadow .3s,border-color .3s}
+  .card.speaking{border-color:rgba(96,165,250,.5);box-shadow:0 0 0 1px rgba(96,165,250,.3),0 12px 34px rgba(96,165,250,.18)}
   .label{color:var(--muted);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em}
   .bubble{background:var(--surface-2);border:1px solid var(--line);border-radius:14px 14px 14px 4px;
     padding:11px 14px;font-size:15px;color:var(--ink-2);margin-top:6px}
@@ -120,7 +122,7 @@
       <div class="label">మీరు అడిగింది</div>
       <div class="bubble" id="transcript"></div>
     </div>
-    <div class="card">
+    <div class="card" id="answerCard">
       <span class="badge" id="routing">సమాధానం</span>
       <div id="answer"></div>
       <div id="viz"></div>
