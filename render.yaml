@@ -1,0 +1,27 @@
+# Render blueprint — https://render.com. Deploy: New + → Blueprint → pick this repo.
+# Secret keys are sync:false, so Render asks you to type them in the dashboard (never in git).
+services:
+  - type: web
+    name: vaani-market
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -W ignore src/vaani/web/app.py
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.6"
+      - key: GNANI_STT_URL
+        value: https://api.vachana.ai/stt/v3
+      - key: GNANI_TTS_URL
+        value: https://api.vachana.ai/api/v1/tts/inference
+      - key: LLM_BASE_URL
+        value: https://generativelanguage.googleapis.com/v1beta/openai/
+      - key: LLM_MODEL
+        value: gemini-3.5-flash-lite
+      - key: LLM_EMBED_MODEL
+        value: gemini-embedding-001
+      - key: GNANI_API_KEY          # fill in the Render dashboard
+        sync: false
+      - key: LLM_API_KEY            # fill in the Render dashboard
+        sync: false

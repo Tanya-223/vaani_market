@@ -15,6 +15,7 @@ Every speech call logs wall-clock time AND Gnani's own processing_time.
 from __future__ import annotations
 
 import json
+import os
 import re
 import sys
 import time
@@ -173,4 +174,6 @@ def main(port: int = 8000) -> None:
 
 
 if __name__ == "__main__":
-    main(int(sys.argv[1]) if len(sys.argv) > 1 else 8000)
+    # Render (and most hosts) inject the port via $PORT; fall back to argv or 8000 locally.
+    port = int(os.environ.get("PORT") or (sys.argv[1] if len(sys.argv) > 1 else 8000))
+    main(port)
