@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ..data import market
 from . import ticker_resolver
@@ -47,10 +47,12 @@ class FactSheet:
     # ---- the two things the rest of the pipeline consumes ----
     def to_prompt_block(self) -> str:
         q = self.quote
+        closed = self.is_stale or bool(q.market_state and q.market_state.upper() != "REGULAR")
         lines = [
             f'name: {self.name_en} ({self.name_te})',
             f'kind: {self.kind}',
             f'as of: {_human_date(self.as_of or q.as_of)} (delayed data; source: {q.source})',
+            f'market_status: {"CLOSED — markets are shut now; these are the latest available figures, not a live price" if closed else "open"}',
         ]
         if q.price is not None:
             lines.append(f'latest price: {q.price} {q.currency or ""}'.strip())
@@ -107,6 +109,19 @@ class FactSheet:
     @property
     def has_cause_evidence(self) -> bool:
         return bool(self.news)
+
+    @property
+    def is_stale(self) -> bool:
+        """True if the latest data point is older than today (market closed / weekend /
+        holiday / delayed) — deterministic, independent of the flaky market_state field."""
+        iso = self.as_of or self.quote.as_of
+        if not iso:
+            return False
+        try:
+            d = datetime.fromisoformat(iso.replace("Z", "+00:00")).date()
+        except ValueError:
+            return False
+        return d < datetime.now(timezone.utc).date()
 
 
 def _add(s: set[float], v) -> None:

@@ -179,6 +179,17 @@ All notable changes to Vaani Market. Dates are IST.
   area, 2px line, end dot + value); up/down use status green/red ONLY with ▲/▼ + number
   (secondary encoding — validated, no colour-alone meaning). Candlestick stays illustrative/labeled.
 - Noto Sans Telugu webfont for clean Telugu rendering.
+## [Unreleased] — TTS decimal fix + market-closed messaging
+### Fixed
+- Sentence chunker split on the decimal point ("8.14" -> "8" pause "14 percent"). Now splits
+  only on punctuation followed by whitespace/end, so decimals never break across TTS clips.
+- Stale/weekend prices were presented without context. Added data-driven staleness
+  (`FactSheet.is_stale`: latest data point older than today) — independent of yfinance's flaky
+  market_state. Answers now state "మార్కెట్ ప్రస్తుతం మూసి ఉంది … చివరి ధర <date> నాటికి …".
+### Changed
+- price_check and market_overview now use the deterministic template (no LLM call): guarantees
+  the market-closed/as-of wording and is faster. why_moved/trend keep the LLM explainer.
+
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
 - Project scaffolding: git repo, `.gitignore` (committed before `.env`), Python 3.9 venv,

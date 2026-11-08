@@ -101,16 +101,23 @@ def handle(text: str, session: "mem.SessionMemory | None" = None) -> Answer:
         fs.background = tier2.note_for(res.symbol)
 
     allowed = fs.allowed_numbers()
-    draft = explainer.explain(fs, lang)
-    ok, _ = numeric_gate.check(draft, allowed)
     used_template = False
-    if not ok:                                  # regenerate once, stricter
-        draft = explainer.explain(fs, lang, stricter=True)
-        ok, _ = numeric_gate.check(draft, allowed)
-    if not ok:                                  # deterministic template fallback
+    if p.intent in ("price_check", "market_overview"):
+        # Simple factual readout -> deterministic template (guarantees the market-closed /
+        # as-of wording, no LLM call, faster). why_moved/trend keep the richer LLM explainer.
         draft = explainer.template_answer(fs, lang)
         used_template = True
         ok, _ = numeric_gate.check(draft, allowed)
+    else:
+        draft = explainer.explain(fs, lang)
+        ok, _ = numeric_gate.check(draft, allowed)
+        if not ok:                              # regenerate once, stricter
+            draft = explainer.explain(fs, lang, stricter=True)
+            ok, _ = numeric_gate.check(draft, allowed)
+        if not ok:                              # deterministic template fallback
+            draft = explainer.template_answer(fs, lang)
+            used_template = True
+            ok, _ = numeric_gate.check(draft, allowed)
 
     # Output guard: a leaked recommendation or prediction must not ship. Fall back to
     # the template (which states only facts); if even that trips, refuse outright.

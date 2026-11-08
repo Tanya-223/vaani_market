@@ -33,12 +33,11 @@ STATIC = Path(__file__).resolve().parent / "static"
 # like "దాని ట్రెండ్?" to reuse the last ticker.
 _SESSION = memory.SessionMemory()
 
-# Sentence split for chunked synthesis (Telugu danda + ASCII . ? !).
-_SENT = re.compile(r"[^.?!।]+[.?!।]?")
-
-
+# Sentence split for chunked synthesis. Split only on sentence punctuation that is
+# followed by whitespace/end — so a decimal point inside a number (8.14) never splits.
 def split_sentences(text: str) -> list[str]:
-    return [s.strip() for s in _SENT.findall(text or "") if s.strip()]
+    parts = re.split(r"(?<=[.?!।])\s+", (text or "").strip())
+    return [p.strip() for p in parts if p.strip()]
 
 
 def _turn_from_transcript(transcript: str, timings: dict) -> dict:

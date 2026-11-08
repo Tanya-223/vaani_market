@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from ..llm import adapter
 from . import refusal
-from .facts import FactSheet
+from .facts import FactSheet, _human_date
 
 _SHAPES = {
     "price_check": "State the latest price with its as-of time. One or two short sentences.",
@@ -44,6 +44,9 @@ def _system(fs: FactSheet, language: str) -> str:
         "round, or invent any number.\n"
         "- Write every number using DIGITS (e.g. 185.79, 2.3, 30), never spelled out in words. "
         "Keep the as-of simply as the date given; do not read out the time or 'UTC'.\n"
+        "- If market_status is CLOSED, your FIRST sentence MUST say the market is closed now "
+        "and that this is the latest available price as of the given date — never imply it is "
+        "today's live price.\n"
         "- Do NOT state raw volume/share counts. To describe volume, use ONLY the "
         "'volume vs average' percent value (trading was that percent above/below average).\n"
         "- Do NOT copy the FACTS labels into the answer; state each figure in natural words.\n"
@@ -81,8 +84,12 @@ def template_answer(fs: FactSheet, language: str = "te-IN") -> str:
             parts.append(f"{fs.series.period_return_pct}% over 30 days")
         return ". ".join(parts) + "."
     # Telugu (draft, needs review)
+    closed = fs.is_stale or bool(q.market_state and q.market_state.upper() != "REGULAR")
     verb = "పెరిగింది" if (q.change_pct or 0) >= 0 else "తగ్గింది"
-    s = f"{fs.name_te} ధర {q.price} రూపాయలు"
+    prefix = "మార్కెట్ ప్రస్తుతం మూసి ఉంది. " if closed else ""
+    date_te = _human_date(fs.as_of or q.as_of)
+    s = f"{prefix}{fs.name_te} చివరి ధర {date_te} నాటికి {q.price} రూపాయలు" if closed \
+        else f"{fs.name_te} ధర {q.price} రూపాయలు"
     if q.change_pct is not None:
         s += f", మునుపటి ముగింపుతో పోలిస్తే {abs(q.change_pct)} శాతం {verb}"
     s += "."
