@@ -165,23 +165,6 @@ python -W ignore -m pytest -q              # 63 unit tests
 python -W ignore eval/harness.py           # writes eval/results/{adversarial,metrics}.csv
 ```
 
-### Deploy a shareable link (Render)
-The repo ships a `render.yaml` blueprint. This app is a long-running Python server, so a
-host that runs a persistent process (Render) fits — not a serverless/static host (Vercel).
-
-1. Push the repo to GitHub.
-2. On [render.com](https://render.com): **New + → Blueprint**, pick this repo. It reads
-   `render.yaml` and creates a free Python web service.
-3. When prompted, paste the two secret values: `GNANI_API_KEY` and `LLM_API_KEY`
-   (the rest are pre-filled). Deploy.
-4. You get a stable `https://vaani-market.onrender.com` URL — open it on any phone, mic included.
-
-*Free-tier note:* the service sleeps after ~15 min idle, so the first request after a nap takes
-~30–60 s to wake. For **recording the demo**, run it on `localhost` (instant); use the Render
-URL as the **shareable link** in your submission.
-
----
-
 ## Measured results
 
 From `eval/results/metrics.csv` (produced by the harness on the working build):
@@ -200,19 +183,6 @@ and browser TTFA/E2E are **targets, not yet measured** — labelled as such in t
 
 ---
 
-## What's built vs. deferred (honest)
-
-**Built & run live:** speech pipeline, planner + router, ticker resolver, market tools,
-Tier-1 glossary, Tier-2 hybrid retrieval, all four guardrail layers, three-tier memory,
-evaluation harness + 40-case suite, mobile web app, Telugu/Hindi/English.
-
-**Deferred (per the project's own cut order):** Tier-3 (HyDE, corrective evaluator,
-self-critique), graph retrieval, the Tier-2 cross-encoder reranker, SSE/WebSocket streaming TTS.
-
-**Drafts:** all Telugu and Hindi strings are marked `reviewed: false` and shown with a draft
-banner until a native speaker verifies them (see [`docs/TELUGU_REVIEW.md`](docs/TELUGU_REVIEW.md)).
-
----
 
 ## Safety
 
