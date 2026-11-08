@@ -166,6 +166,19 @@ All notable changes to Vaani Market. Dates are IST.
 - routing 100% (40/40); refusal 100% (18/18); numeric hallucination 0; ticker 16/16;
   glossary AND tier2 retrieval P@1/MRR@5/nDCG@5 = 1.0; LLM-path latency median 1.49s / p90 3.67s.
 
+## [Unreleased] — UI polish + Telugu review sheet
+### Added
+- `docs/TELUGU_REVIEW.md` — every Telugu string (12 glossary + refusal/decline/disclaimer/
+  clarify + company names) with English gloss and a blank Fix line, generated from the code.
+### Changed (web UI)
+- Reworked `web/static/index.html` + `app.js`: logo header, "Not advice" badge, tappable
+  example-question chips, visible states (listening/thinking/speaking), user bubble,
+  routing badge, price stat tile + up/down status pill, KPI tiles (30d return / high / low /
+  volume-vs-avg), headlines, Tier-2 background note, as-of/verified meta, disclaimer bar.
+- Charts follow the dataviz method: 30-day line is a single BLUE series (gridlines, soft
+  area, 2px line, end dot + value); up/down use status green/red ONLY with ▲/▼ + number
+  (secondary encoding — validated, no colour-alone meaning). Candlestick stays illustrative/labeled.
+- Noto Sans Telugu webfont for clean Telugu rendering.
 ## [Phase 1] — 2026-11-07 — Data layer proven (GATE PASSED)
 ### Added
 - Project scaffolding: git repo, `.gitignore` (committed before `.env`), Python 3.9 venv,
